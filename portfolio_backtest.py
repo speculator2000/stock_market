@@ -20,7 +20,7 @@ end_date = datetime.today().strftime('%Y-%m-%d')
 
 # Add a title and an image
 st.write("""
-# Optimal Portfolio Backtest TooP
+# Optimal Portfolio Backtest Tool
 suggests optimal portfolio allocation and calculates performance during chosen timeframe
 """)
 
@@ -39,7 +39,7 @@ df5 = pd.DataFrame()
 def get_input():
     start_date = st.sidebar.text_input("Start Date", "2021-01-02")
     end_date = st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
-    stock_symbol = st.sidebar.text_input("Stocks to Compare (e.g. AAPL, GOOG, IBM)", my_portfolio)
+    stock_symbol = st.sidebar.text_input("Enter Stocks in Portfolio (format: GE, AMZN, GOOG)", my_portfolio)
     funds_to_invest = st.sidebar.text_input("Total Funds to Invest", "100000")
     return start_date, end_date, stock_symbol, funds_to_invest
 
