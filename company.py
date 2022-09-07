@@ -14,7 +14,7 @@ import plotly.express as px
 import yfinance as yf
 
 # Create a sidebar header
-st.sidebar.header('User Input')
+st.sidebar.header('Configuration')
 
 df = pd.DataFrame()   # Create a dataframe to store the adjusted close price of the stocks
 df2 = pd.DataFrame()
@@ -28,10 +28,11 @@ df_MACD = []
 
 # Create a function to get user input
 def get_input():
-    start_date = st.sidebar.text_input("Start Date", "2021-01-01")
-    end_date = st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
-    stock_symbol = st.sidebar.text_input("Stock Symbol", "AMD")
-    return start_date, end_date, stock_symbol
+    with st.sidebar:
+        start_date = st.text_input("Start Date", "2021/01/01")
+        end_date = st.date_input("End Date")  # .sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
+        stock_symbol = st.sidebar.text_input("Stock Symbol", "AMD")
+        return start_date, end_date, stock_symbol
 
 
 # create a function to get the proper company data and timeframe
@@ -59,7 +60,10 @@ def get_data(symbol, data_source, start, end):
 
 # Get users input
 start, end, symbol = get_input()
+symbol = symbol.strip()
 symbol = symbol.upper()
+st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
+
 # Retrieve stock data
 df = web.DataReader(symbol, data_source='yahoo', start=start, end=end)
 
@@ -104,12 +108,11 @@ soup = BeautifulSoup(requests.get(stock_company).text, "html.parser")
 company_name = soup.h1.text.split('-')[0].strip()
 
 # Add a title
-st.write(""" # """ + company_name + """ - Chidi""")
+st.header(company_name + """ Analysis""")
 
 # get Company Summary on this Symbol
 tickerData = yf.Ticker(symbol)
 tickerData.info['longBusinessSummary']
-st.write(tickerData)
 
 # Get the next earnings statement date
 try:
@@ -135,7 +138,7 @@ fig.update_layout(
 st.plotly_chart(fig,  use_container_width=True)
 
 # Display the close price
-st.header(symbol + "- Adjusted Close Price History\n")
+st.subheader(symbol + "- Adjusted Close Price History\n")
 df = df.drop(columns=["Date"])
 st.write(df)
 
