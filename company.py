@@ -107,8 +107,9 @@ stock_company = f"https://finance.yahoo.com/quote/{symbol}"
 soup = BeautifulSoup(requests.get(stock_company).text, "html.parser")
 company_name = soup.h1.text.split('-')[0].strip()
 
-# Add a title
-st.header(company_name + """ Analysis""")
+# Add a title and center it using a markdown since no streamlit aligning feature
+st.markdown("<h2 style='text-align: center; color: black;'>" + company_name + " Analysis</h2>", unsafe_allow_html=True)
+# st.header(company_name + """ Analysis""")
 
 # get Company Summary on this Symbol
 tickerData = yf.Ticker(symbol)
@@ -138,7 +139,8 @@ fig.update_layout(
 st.plotly_chart(fig,  use_container_width=True)
 
 # Display the close price
-st.subheader(symbol + "- Adjusted Close Price History\n")
+# st.subheader(symbol + "- Adjusted Close Price History\n")
+st.markdown("<h3 style='text-align: center; color: black;'>" + symbol + " - Adjusted Close Price History</h3>", unsafe_allow_html=True)
 df = df.drop(columns=["Date"])
 st.write(df)
 
