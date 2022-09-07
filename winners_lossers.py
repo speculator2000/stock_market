@@ -1,11 +1,29 @@
-#This is a Trade Opportunity Scan Tool
+# This is a Trade Opportunity Scan Tool
 import streamlit as st
 import yahoo_fin.stock_info as si
 
 df1 = si.get_day_gainers()
 df2 = si.get_day_losers()
 
-st.write(df1)
-st.write(df2)
+st.subheader("Top 100 Gainers Today")
 
-
+st.write(df1.style.format({'Price (Intraday)': '${:,.2f}',
+                           'Change': '${:,.2f}',
+                           '% Change': '{:,.1f}%',
+                           'Volume': '{:,.0f}',
+                           'Avg Vol (3 month)': '{:,.0f}',
+                           'Market Cap': '${:,.0f}',
+                           'PE Ratio (TTM)': '{:,.2f}'}))
+st.text('')
+st.subheader("Bottom 100 Stocks Today")
+st.write(df2.style.format({'Price (Intraday)': '${:,.2f}',
+                           'Change': '${:,.2f}',
+                           '% Change': '{:,.1f}%',
+                           'Volume': '{:,.0f}',
+                           'Avg Vol (3 month)': '{:,.0f}',
+                           'Market Cap': '${:,.0f}',
+                           'PE Ratio (TTM)': '{:,.2f}'}))
+st.text('')
+st.text('')
+st.text('')
+st.caption("ⓒ Franklin Chidi (FC) - MIT License")
