@@ -12,7 +12,7 @@ plt.style.use('fivethirtyeight')
 
 # Assign default weights to the portfolio
 my_portfolio = "TSLA, ZM, AAPL, AMZN, GOOG, META, AMD, NVDA"
-start_date = '2021-01-01'
+start_date = '2021/01/01'
 end_date = datetime.today().strftime('%Y-%m-%d')
 attribute_list = ['Market Cap', 'Trailing P/E', 'Forward P/E', 'PEG Ratio', 'Price/Sales', 'Price/Book', 'Enterprise Value/Revenue', 'Enterprise Value/EBITDA']
 header_attribute_list = ['M Cap', 'T P/E', 'F P/E', 'PEG', 'P/S', 'P/B', 'EV/Rev', 'EV/EBITDA'] #To update final colunm names
@@ -20,13 +20,11 @@ attribute_list2 = ['Beta', '50-Day', '200-Day', '52 Week H', '52 Week L', '% Hel
 header_attribute_list2 = ['Beta', '50d', '200d', '52W H', '52W L', '%Inst', '%Short', '%Profit', 'ROE']
 risk_free = 0.015
 
-# Add a title and an image
-st.write("""
-# Stock Portfolio Analysis - Chidi
-""")
+# Add a title
+st.markdown("<h1 style='text-align: center; color: Grey;'>Portfolio Analysis</h2>", unsafe_allow_html=True)
 
 # Create a sidebar header
-st.sidebar.header('User Input')
+st.sidebar.header('Configuration')
 # Create a dataframe to store the adjusted close price of the stocks
 df = pd.DataFrame()
 df2 = pd.DataFrame()
@@ -37,10 +35,11 @@ df6 = pd.DataFrame()
 
 # Create a function to capture the default inputs for the start run
 def get_input():
-    start_date = st.sidebar.text_input("Start Date", "2021-01-02")
-    end_date = st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
-    stock_symbol = st.sidebar.text_input("Enter Stock Symbols (e.g. AAPL, GOOG, IBM)", my_portfolio)
-    return start_date, end_date, stock_symbol
+    with st.sidebar:
+        start_date = st.sidebar.text_input("Start Date", "2020/01/02")
+        end_date = st.date_input("End Date")  #st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
+        stock_symbol = st.sidebar.text_input("Enter Stock Symbols (e.g. AAPL, GOOG, IBM)", my_portfolio)
+        return start_date, end_date, stock_symbol
 
 
 # Create a function to get the proper company data and timeframe
@@ -74,6 +73,7 @@ def get_data(frm_symbol, data_source, start, end):
 # Get Updated Users Input from sidebar form
 start, end, frm_symbol = get_input()
 frm_symbol = frm_symbol.upper()
+st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 clean_form_Symbols = list(frm_symbol.split(', '))
 
 # Get the data using cleaned symbols
