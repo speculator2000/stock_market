@@ -15,14 +15,12 @@ from pypfopt.efficient_frontier import EfficientFrontier
 # Assign default weights to the portfolio
 weights = np.array([0.20, 0.20, 0.20, 0.20, .20])
 my_portfolio = "AMD, LCID, RIVN, MGM, SIRI"
-start_date = '2021-01-01'
+start_date = '2021/01/01'
 end_date = datetime.today().strftime('%Y-%m-%d')
 
 # Add a title and an image
-st.write("""
-# Optimal Portfolio Backtest Tool
-suggests optimal portfolio allocation and calculates performance during chosen timeframe
-""")
+st.markdown("<h1 style='text-align: center; color: Grey;'>Optimal Portfolio Backtest Tool</h1>", unsafe_allow_html=True)
+st.markdown("<h6 style='text-align: center; color: Grey;'>Calculates optimal portfolio allocation and expected portfolio return during chosen timeframe</h6>", unsafe_allow_html=True)
 
 # Create a sidebar header
 st.sidebar.header('Configure Portfolio')
@@ -37,11 +35,12 @@ df5 = pd.DataFrame()
 
 # Create a function ot get the users input
 def get_input():
-    start_date = st.sidebar.text_input("Start Date", "2021-01-02")
-    end_date = st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
-    stock_symbol = st.sidebar.text_input("Enter Stocks in Portfolio (format: GE, AMZN, GOOG)", my_portfolio)
-    funds_to_invest = st.sidebar.text_input("Total Funds to Invest", "100000")
-    return start_date, end_date, stock_symbol, funds_to_invest
+    with st.sidebar:
+        start_date = st.sidebar.text_input("Start Date", "2021/01/02")
+        end_date = st.date_input("End Date")  #st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
+        stock_symbol = st.sidebar.text_input("Enter Stocks in Portfolio (format: GE, AMZN, GOOG)", my_portfolio)
+        funds_to_invest = st.sidebar.number_input("Total Funds to Invest", value=100000, step=10000, format='%d')
+        return start_date, end_date, stock_symbol, funds_to_invest
 
 
 # Create a function to get the proper company data and timeframe
@@ -77,7 +76,7 @@ start, end, frm_symbol, funds_to_invest = get_input()
 st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 frm_symbol = frm_symbol.upper()
 clean_form_Symbols = list(frm_symbol.split(', '))
-funds_to_invest.strip()
+#funds_to_invest.strip()
 clean_funds_to_invest = int(funds_to_invest)
 if clean_funds_to_invest < 1:
     clean_funds_to_invest = 1
@@ -135,9 +134,9 @@ portforlioSimpleAnnualReturn = np.sum(returns.mean() * weights) * 252
 # st.write(portforlioSimpleAnnualReturn)
 
 # Show the expected annual return, volatility (risk) and variance
-percent_var = str(round(port_variance, 2) * 100) + '%'
-percent_vols = str(round(port_volatility,2) * 100) + '%'
-percent_ret = str(round(portforlioSimpleAnnualReturn, 2) * 100) + '%'
+percent_var = str(round(port_variance, 3) * 100) + '%'
+percent_vols = str(round(port_volatility,3) * 100) + '%'
+percent_ret = str(round(portforlioSimpleAnnualReturn, 3) * 100) + '%'
 
 st.write('Expected Annual Return: ' + percent_ret)
 st.write('Annual Volatility (Risk): ' + percent_vols)
@@ -206,7 +205,8 @@ leftover_corrected = clean_funds_to_invest - total_invested
 final_portfolio_value = total_invested + total_gain + leftover_corrected
 
 st.write("[Optimal Portfolio Allocation and Performance during Period]")
-st.write(df_portfolio_total)    # Show the portfolio with added calculated columns
+
+st.write(df_portfolio_total)    # Show the portfolio with calculated columns
 st.write('Invested ${:,.0f}'.format(total_invested) + ', leaving a cash balance of ${:.0f}'.format(leftover_corrected))
 st.write('Portfolio stocks changed by {:.1%}'.format(total_percent_gain) + ', for a total gain of ${:,.0f}'.format(total_gain))
 st.write('Total Portfolio value is now ${:,.0f}'.format(final_portfolio_value))
