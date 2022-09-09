@@ -14,7 +14,7 @@ from pypfopt.efficient_frontier import EfficientFrontier
 
 # Assign default weights to the portfolio
 weights = np.array([0.20, 0.20, 0.20, 0.20, .20])
-my_portfolio = "AMD, LCID, RIVN, MGM, SIRI"
+my_portfolio = "AMD, TSLA, RIVN, MGM, AMZN, SIRI, META"
 start_date = '2021/01/01'
 end_date = datetime.today().strftime('%Y-%m-%d')
 
@@ -39,7 +39,7 @@ def get_input():
         start_date = st.sidebar.text_input("Start Date", "2021/01/02")
         end_date = st.date_input("End Date")  #st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
         stock_symbol = st.sidebar.text_input("Enter Stocks in Portfolio (format: GE, AMZN, GOOG)", my_portfolio)
-        funds_to_invest = st.sidebar.number_input("Total Funds to Invest", value=100000, step=10000, format='%d')
+        funds_to_invest = st.sidebar.number_input("Total Funds to Invest", value=500000, step=10000, format='%d')
         return start_date, end_date, stock_symbol, funds_to_invest
 
 
@@ -131,16 +131,15 @@ port_volatility = np.sqrt(port_variance)
 
 # Calculate the annual portfolio return
 portforlioSimpleAnnualReturn = np.sum(returns.mean() * weights) * 252
-# st.write(portforlioSimpleAnnualReturn)
 
 # Show the expected annual return, volatility (risk) and variance
 percent_var = str(round(port_variance, 3) * 100) + '%'
 percent_vols = str(round(port_volatility,3) * 100) + '%'
 percent_ret = str(round(portforlioSimpleAnnualReturn, 3) * 100) + '%'
 
-st.write('Expected Annual Return: ' + percent_ret)
-st.write('Annual Volatility (Risk): ' + percent_vols)
-st.write('Annual Variance: ' + percent_var)
+st.write('Expected Annual Return, if equal weights purchased: ' + percent_ret)
+st.write('Portfolio Volatility (Risk) - annualized: ' + percent_vols)
+st.write('Portfolio Variance - annualized: ' + percent_var)
 
 # Portfolio Optimization *********************************************************************
 # Calculate the expected returns and the annualized sample covariance matrix of asset returns
@@ -175,6 +174,8 @@ df_merged2 = pd.concat([df4,df5], axis=1)
 df_merged2.columns = [start,end]  # Change the name of the start and End dates to the column
 # Merge both dataframes to get one
 df_portfolio_total = df_merged1.merge(df_merged2, left_index=True, right_index=True)
+
+
 # Functions to calculate total dollars invested, % gains for each share, and total portfolio profits
 def portfolio_profit(row):
     return row['#Shares'] * (row[end] - row[start])
@@ -185,17 +186,19 @@ def dollars_invested(row):
 def weight_x_funds(row):
     return row['Weight'] * clean_funds_to_invest
 def weighted_funds_divided_by_startPrice(row):
-    return row['Weighted_funds'] / row[start]
-# Used .apply to use function and save the new calculated columns as Profits earned by each share, Gain/Loss in $ and total invested
+    return row['Funds Invested'] / row[start]
+# Used .apply to use function and save the new calculated columns as Profits_
+# _earned by each share, Gain/Loss in $ and total invested
 # st.write(df_portfolio_total)
 
 
-df_portfolio_total['Weighted_funds'] = df_portfolio_total.apply(weight_x_funds, axis=1)
+
+df_portfolio_total['Funds Invested'] = df_portfolio_total.apply(weight_x_funds, axis=1)
 df_portfolio_total['Shares to buy'] = df_portfolio_total.apply(weighted_funds_divided_by_startPrice, axis=1)
 df_portfolio_total['#Shares'] = df_portfolio_total['Shares to buy'].apply(np.floor)
-df_portfolio_total = df_portfolio_total.drop(columns=['Shares to buy','Weighted_funds'])
-df_portfolio_total['%Change'] = df_portfolio_total.apply(profits_earned, axis=1)
+df_portfolio_total = df_portfolio_total.drop(columns=['Shares to buy'])
 df_portfolio_total['Gain/Loss'] = df_portfolio_total.apply(portfolio_profit, axis=1)
+df_portfolio_total['%Change'] = df_portfolio_total.apply(profits_earned, axis=1)
 df_total_invested_dollars = df_portfolio_total.apply(dollars_invested, axis=1)
 
 total_gain = df_portfolio_total['Gain/Loss'].sum()  # Sum up the total dollar gain for portfolio
@@ -205,9 +208,15 @@ leftover_corrected = clean_funds_to_invest - total_invested
 final_portfolio_value = total_invested + total_gain + leftover_corrected
 
 st.write("[Optimal Portfolio Allocation and Performance during Period]")
+df_portfolio_total['Weight'] = df_portfolio_total['Weight']*100
+st.write(df_portfolio_total.style.format({'Weight': '{:.1f}%',
+                           '#Shares': '{:,.0f}',
+                           start: '${:,.2f}',
+                           end: '${:,.2f}',
+                           'Funds Invested': '${:,.0f}',
+                           'Gain/Loss': '${:,.0f}',
+                           '%Change': '{:.1f}%'}))
 
-st.write(df_portfolio_total)    # Show the portfolio with calculated columns
-st.write('Invested ${:,.0f}'.format(total_invested) + ', leaving a cash balance of ${:.0f}'.format(leftover_corrected))
+st.write('Invested a total of {:,.0f}'.format(total_invested) + ', leaving a cash balance of ${:.0f}'.format(leftover_corrected))
 st.write('Portfolio stocks changed by {:.1%}'.format(total_percent_gain) + ', for a total gain of ${:,.0f}'.format(total_gain))
 st.write('Total Portfolio value is now ${:,.0f}'.format(final_portfolio_value))
-
