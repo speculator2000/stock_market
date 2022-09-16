@@ -14,7 +14,7 @@ from pypfopt.efficient_frontier import EfficientFrontier
 
 # Assign default weights to the portfolio
 weights = np.array([0.20, 0.20, 0.20, 0.20, .20])
-my_portfolio = "AMD, TSLA, RIVN, MGM, AMZN, SIRI, META"
+my_portfolio = "AMD, TSLA, MGM, AMZN, SIRI"
 start_date = '2021/01/01'
 end_date = datetime.today().strftime('%Y-%m-%d')
 
@@ -90,7 +90,7 @@ for symbol in clean_form_Symbols:
 for c in df.columns.values:
     df2[c] = (df[c]/df[c].iloc[0])
 
-# Update the number of stocks based on the user form
+# Update the calculated equal weight based on number of different stocks on the user form
 Number_of_stocks = len(clean_form_Symbols)
 weights_original = 1/Number_of_stocks   # Update the default weight for portfolio optimization
 weights.resize(Number_of_stocks)        # resize the numpy array to current number of the portfolio
@@ -102,6 +102,7 @@ fig = px.line(df)
 fig.update_layout(
     title='Adjusted Daily Close Price of Stocks over Period',
     yaxis_title="", xaxis_title="",
+    title_x=0.5,
     font=dict(family="Arial", size=11))
 st.plotly_chart(fig,  use_container_width=True)
 
@@ -110,6 +111,7 @@ fig = px.line(df2)
 fig.update_layout(
     title='Relative Daily Change between Stocks in Period',
     yaxis_title="", xaxis_title="",
+    title_x=0.5,
     font=dict(family="Arial", size=11))
 st.plotly_chart(fig,  use_container_width=True)
 
@@ -118,8 +120,16 @@ returns = df.pct_change()
 
 # Create the annualized covariance matrix
 cov_matrix_annual = returns.cov() * 252
-st.write('Portfolio Covariance')
-st.write(cov_matrix_annual)
+st.markdown("<h6 style='text-align: center; color: Grey;'>Portfolio Covariance</h6>", unsafe_allow_html=True)
+# st.write('Portfolio Covariance')
+col1, col2, col3 = st.columns([1,2,1])
+with col1:
+    st.write("")
+with col2:
+    st.dataframe(cov_matrix_annual)
+    #st.table(cov_matrix_annual)
+with col3:
+    st.write("")
 
 # Calculate the portfolio variance
 port_variance = np.dot(weights.T, np.dot(cov_matrix_annual, weights))
@@ -218,5 +228,7 @@ st.write(df_portfolio_total.style.format({'Weight': '{:.1f}%',
                            '%Change': '{:.1f}%'}))
 
 st.write('Invested a total of {:,.0f}'.format(total_invested) + ', leaving a cash balance of ${:.0f}'.format(leftover_corrected))
+st.write(weights_original)
 st.write('Portfolio stocks changed by {:.1%}'.format(total_percent_gain) + ', for a total gain of ${:,.0f}'.format(total_gain))
 st.write('Total Portfolio value is now ${:,.0f}'.format(final_portfolio_value))
+
