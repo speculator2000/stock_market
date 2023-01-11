@@ -4,7 +4,7 @@ from pandas_datareader import data as web
 from pandas_datareader import data as pdr
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import matplotlib.pyplot as plt
 import yfinance as yf
 import yahoo_fin.stock_info as si
@@ -17,7 +17,7 @@ plt.style.use('fivethirtyeight')
 # Assign default weights to the portfolio
 weights = np.array([0.20, 0.20, 0.20, 0.20, .20])
 my_portfolio = "AMD, TSLA, MGM, AMZN, SIRI"
-start_date = '2021-01-01'
+start_date = '2022-01-01'
 end_date = datetime.today().strftime('%Y-%m-%d')
 
 # Add a title and an image
@@ -35,20 +35,20 @@ df4 = pd.DataFrame()
 df5 = pd.DataFrame()
 
 # Create a function ot get the users input
-# today = date.today()
-# default_date = today - 365
+today = date.today()
+default_date = today - timedelta(days=365)
 def get_input():
     with st.sidebar:
-      #  start_date = st.date_input("Start Date",default_date)
-        start_date = st.sidebar.text_input("Start Date", "2021/01/02")
-        end_date = st.date_input("End Date")  #st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
+        start_date = st.date_input("Start Date",default_date)  # st.sidebar.text_input("Start Date", "2021/01/02")
+        end_date = st.date_input("End Date")  # st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
         stock_symbol = st.sidebar.text_input("Enter Stocks in Portfolio (format: GE, AMZN, GOOG)", my_portfolio)
-        funds_to_invest = st.sidebar.number_input("Total Funds to Invest", value=500000, step=10000, format='%d')
+        funds_to_invest = st.sidebar.number_input("Total Funds to Invest", value=500000, step=50000, format='%d')
         return start_date, end_date, stock_symbol, funds_to_invest
 
 
 # Create a function to get the proper company data and timeframe
 def get_data(frm_symbol, data_source, start, end):
+
         for symbol in my_portfolio:
             df[symbol] = pdr.get_data_yahoo(symbol, start=start_date, end=end_date)['Adj Close']
        #     df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start_date, end=end_date)['Adj Close']
@@ -87,7 +87,7 @@ if clean_funds_to_invest < 1:
 
 # Get the data using cleaned symbols
 for symbol in clean_form_Symbols:
-    df[symbol] = pdr.get_data_yahoo(symbol, start=start_date, end=end_date)['Adj Close']
+    df[symbol] = pdr.get_data_yahoo(symbol, start=start, end=end)['Adj Close']
 #    df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start, end=end)['Adj Close']
     df4 = df.head(1).transpose()
     df5 = df.tail(1).transpose()
@@ -148,13 +148,10 @@ port_volatility = np.sqrt(port_variance)
 portforlioSimpleAnnualReturn = np.sum(returns.mean() * weights) * 252
 
 # Show the expected annual return, volatility (risk) and variance
-percent_var = str(round(port_variance, 3) * 100) + '%'
-percent_vols = str(round(port_volatility,3) * 100) + '%'
-percent_ret = str(round(portforlioSimpleAnnualReturn, 3) * 100) + '%'
+st.write('Expected Annual Return, if equal weights purchased:{: .1%}'.format(portforlioSimpleAnnualReturn))
+st.write('Portfolio Volatility (Risk) - annualized:{: .1%}'.format(port_volatility))
+st.write('Portfolio Variance - annualized:{: .1%}'.format(port_variance))
 
-st.write('Expected Annual Return, if equal weights purchased: ' + percent_ret)
-st.write('Portfolio Volatility (Risk) - annualized: ' + percent_vols)
-st.write('Portfolio Variance - annualized: ' + percent_var)
 
 # Portfolio Optimization *********************************************************************
 # Calculate the expected returns and the annualized sample covariance matrix of asset returns
