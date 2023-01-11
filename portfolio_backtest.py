@@ -1,21 +1,23 @@
 # This is a Portfolio Analysis Tool which analyzes a portfolio of Stocks
 import streamlit as st
 from pandas_datareader import data as web
+from pandas_datareader import data as pdr
 import pandas as pd
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
+import yfinance as yf
 import yahoo_fin.stock_info as si
 import plotly.express as px
 from pypfopt import risk_models
 from pypfopt import expected_returns
 from pypfopt.efficient_frontier import EfficientFrontier
-
+yf.pdr_override()
+plt.style.use('fivethirtyeight')
 # Assign default weights to the portfolio
 weights = np.array([0.20, 0.20, 0.20, 0.20, .20])
 my_portfolio = "AMD, TSLA, MGM, AMZN, SIRI"
-start_date = '2021/01/01'
+start_date = '2021-01-01'
 end_date = datetime.today().strftime('%Y-%m-%d')
 
 # Add a title and an image
@@ -32,10 +34,12 @@ df3 = pd.DataFrame()
 df4 = pd.DataFrame()
 df5 = pd.DataFrame()
 
-
 # Create a function ot get the users input
+# today = date.today()
+# default_date = today - 365
 def get_input():
     with st.sidebar:
+      #  start_date = st.date_input("Start Date",default_date)
         start_date = st.sidebar.text_input("Start Date", "2021/01/02")
         end_date = st.date_input("End Date")  #st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
         stock_symbol = st.sidebar.text_input("Enter Stocks in Portfolio (format: GE, AMZN, GOOG)", my_portfolio)
@@ -46,7 +50,8 @@ def get_input():
 # Create a function to get the proper company data and timeframe
 def get_data(frm_symbol, data_source, start, end):
         for symbol in my_portfolio:
-            df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start_date, end=end_date)['Adj Close']
+            df[symbol] = pdr.get_data_yahoo(symbol, start=start_date, end=end_date)['Adj Close']
+       #     df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start_date, end=end_date)['Adj Close']
         # Get the date range
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
@@ -71,7 +76,6 @@ def get_data(frm_symbol, data_source, start, end):
         return df.iloc[start_row:end_row +1, :]
 # Get Updated Users Input from sidebar form
 
-
 start, end, frm_symbol, funds_to_invest = get_input()
 st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 frm_symbol = frm_symbol.upper()
@@ -83,7 +87,8 @@ if clean_funds_to_invest < 1:
 
 # Get the data using cleaned symbols
 for symbol in clean_form_Symbols:
-    df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start, end=end)['Adj Close']
+    df[symbol] = pdr.get_data_yahoo(symbol, start=start_date, end=end_date)['Adj Close']
+#    df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start, end=end)['Adj Close']
     df4 = df.head(1).transpose()
     df5 = df.tail(1).transpose()
 
@@ -120,7 +125,7 @@ returns = df.pct_change()
 
 # Create the annualized covariance matrix
 cov_matrix_annual = returns.cov() * 252
-st.markdown("<h6 style='text-align: center; color: Grey;'>Portfolio Covariance</h6>", unsafe_allow_html=True)
+st.markdown("<h6 style='text-align: center; color: blue;'>Portfolio Covariance</h6>", unsafe_allow_html=True)
 # st.write('Portfolio Covariance')
 col1, col2, col3 = st.columns([1,2,1])
 with col1:
@@ -217,18 +222,26 @@ total_percent_gain = total_gain / total_invested    # Total portfolio percentage
 leftover_corrected = clean_funds_to_invest - total_invested
 final_portfolio_value = total_invested + total_gain + leftover_corrected
 
-st.write("[Optimal Portfolio Allocation and Performance during Period]")
+# st.write("[Optimal Portfolio Allocation and Performance during Period]")
+st.markdown("<h6 style='text-align: center; color: blue;'>Optimal Portfolio Allocation and Performance during Period</h6>", unsafe_allow_html=True)
 df_portfolio_total['Weight'] = df_portfolio_total['Weight']*100
-st.write(df_portfolio_total.style.format({'Weight': '{:.1f}%',
-                           '#Shares': '{:,.0f}',
-                           start: '${:,.2f}',
-                           end: '${:,.2f}',
-                           'Funds Invested': '${:,.0f}',
-                           'Gain/Loss': '${:,.0f}',
-                           '%Change': '{:.1f}%'}))
+
+col1, col2, col3 = st.columns([.5,10,.5])
+with col1:
+    st.write("")
+with col2:
+    st.write(df_portfolio_total.style.format({'Weight': '{:.1f}%',
+                                              '#Shares': '{:,.0f}',
+                                              start: '${:,.2f}',
+                                              end: '${:,.2f}',
+                                              'Funds Invested': '${:,.0f}',
+                                              'Gain/Loss': '${:,.0f}',
+                                              '%Change': '{:.1f}%'}))
+with col3:
+    st.write("")
 
 st.write('Invested a total of {:,.0f}'.format(total_invested) + ', leaving a cash balance of ${:.0f}'.format(leftover_corrected))
-st.write(weights_original)
+#st.write(weights_original)
 st.write('Portfolio stocks changed by {:.1%}'.format(total_percent_gain) + ', for a total gain of ${:,.0f}'.format(total_gain))
 st.write('Total Portfolio value is now ${:,.0f}'.format(final_portfolio_value))
 
