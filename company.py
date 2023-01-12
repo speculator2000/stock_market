@@ -1,8 +1,9 @@
 # This is an analysis tool to be used for individual company stock
 import streamlit as st
 from pandas_datareader import data as web
+from pandas_datareader import data as pdr
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import yahoo_fin.stock_info as si
 import requests
 from bs4 import BeautifulSoup
@@ -12,7 +13,7 @@ import plotly.figure_factory as ff
 import plotly.graph_objects as go
 import plotly.express as px
 import yfinance as yf
-
+yf.pdr_override()
 # Create a sidebar header
 st.sidebar.header('Configuration')
 
@@ -25,19 +26,22 @@ df6 = pd.DataFrame()
 df_percent_chg = pd.DataFrame()
 df_MACD = []
 
+# Create a function to get the users input
+today = date.today()
+default_date = today - timedelta(days=365)
 
 # Create a function to get user input
 def get_input():
     with st.sidebar:
-        start_date = st.text_input("Start Date", "2021/01/01")
-        end_date = st.date_input("End Date")  # .sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
+        start_date = st.date_input("Start Date", default_date)
+        end_date = st.date_input("End Date")
         stock_symbol = st.sidebar.text_input("Stock Symbol", "AMD")
         return start_date, end_date, stock_symbol
 
 
 # create a function to get the proper company data and timeframe
 def get_data(symbol, data_source, start, end):
-        df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start, end=end)
+        df[symbol] = pdr.get_data_yahoo(symbol, start=start, end=end)
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
         # set the start and end index rows both to zero
@@ -65,7 +69,8 @@ symbol = symbol.upper()
 st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 
 # Retrieve stock data
-df = web.DataReader(symbol, data_source='yahoo', start=start, end=end)
+df = pdr.get_data_yahoo(symbol, start=start, end=end)
+# df = web.DataReader(symbol, data_source='yahoo', start=start, end=end)
 
 # Calculate the Daily Percentage Returns
 df2 = df['Adj Close']
@@ -114,16 +119,18 @@ st.markdown("<h2 style='text-align: center; color: black;'>" + company_name + " 
 # get Company Summary on this Symbol
 tickerData = yf.Ticker(symbol)
 tickerData.info['longBusinessSummary']
-
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Get the next earnings statement date
-try:
-    earningsDate = si.get_next_earnings_date(symbol)
-    strEarningsDate = earningsDate.strftime("%d %b %Y ")
-except KeyError:
-    strEarningsDate = "No Date"
-except IndexError:
-    earningsDate = 'null'
-    strEarningsDate = 'No Date'
+#try:
+#    earningsDate = si.get_next_earnings_date(symbol)
+#    strEarningsDate = earningsDate.strftime("%d %b %Y ")
+#except KeyError:
+#    strEarningsDate = "No Date"
+#except IndexError:
+#    earningsDate = 'null'
+strEarningsDate = 'No Date'
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 # Plot Candlestick Chart
 df['Date'] = df.index
 fig = go.Figure(data=[go.Candlestick(x=df['Date'],
