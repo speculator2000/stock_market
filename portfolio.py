@@ -3,16 +3,18 @@ import requests
 from bs4 import BeautifulSoup
 import streamlit as st
 from pandas_datareader import data as web
+from pandas_datareader import data as pdr
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date, timedelta
+import yfinance as yf
 import yahoo_fin.stock_info as si
 import plotly.express as px
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
-
+yf.pdr_override()
 # Assign default weights to the portfolio
 my_portfolio = "TSLA, ZM, AAPL, AMZN, GOOG, META, AMD, NVDA"
-start_date = '2021/01/01'
+start_date = '2022-01-01'
 end_date = datetime.today().strftime('%Y-%m-%d')
 attribute_list = ['Market Cap', 'Trailing P/E', 'Forward P/E', 'PEG Ratio', 'Price/Sales', 'Price/Book', 'Enterprise Value/Revenue', 'Enterprise Value/EBITDA']
 header_attribute_list = ['M Cap', 'T P/E', 'F P/E', 'PEG', 'P/S', 'P/B', 'EV/Rev', 'EV/EBITDA'] #To update final colunm names
@@ -32,11 +34,14 @@ df3 = pd.DataFrame()
 df4 = pd.DataFrame()
 df6 = pd.DataFrame()
 
+# Create a function ot get the users input
+today = date.today()
+default_date = today - timedelta(days=365)
 
 # Create a function to capture the default inputs for the start run
 def get_input():
     with st.sidebar:
-        start_date = st.sidebar.text_input("Start Date", "2020/01/02")
+        start_date = st.date_input("Start Date",default_date)
         end_date = st.date_input("End Date")  #st.sidebar.text_input("End Date", str(datetime.now().strftime('%Y-%m-%d')))
         stock_symbol = st.sidebar.text_input("Enter Stock Symbols (e.g. AAPL, GOOG, IBM)", my_portfolio)
         return start_date, end_date, stock_symbol
@@ -45,7 +50,7 @@ def get_input():
 # Create a function to get the proper company data and timeframe
 def get_data(frm_symbol, data_source, start, end):
         for symbol in my_portfolio:
-            df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start_date, end=end_date)['Adj Close']
+            df[symbol] = pdr.get_data_yahoo(symbol, start=start_date, end=end_date)['Adj Close']
 
         # Get the date range
         start = pd.to_datetime(start)
@@ -78,8 +83,10 @@ clean_form_Symbols = list(frm_symbol.split(', '))
 
 # Get the data using cleaned symbols
 for symbol in clean_form_Symbols:
-    df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start, end=end)['Adj Close']
+    df[symbol] = pdr.get_data_yahoo(symbol, start=start, end=end)['Adj Close']
+    # df[symbol] = web.DataReader(symbol, data_source='yahoo', start=start, end=end)['Adj Close']
     df4 = df.tail(1).transpose()    # Gets the current prices to append to statistics dataframe
+print(df4)
 df4['Price'] = df4  # Current prices
 df5 = df4['Price']
 
@@ -115,13 +122,13 @@ df_Earnings2 = pd.DataFrame()
 # Get Date of next earnings statement
 for symbol in clean_form_Symbols:
     try:
-        earningsPull = si.get_next_earnings_date(symbol)
-        strEarningsDate = earningsPull.strftime("%d %b %Y ")
+        # earningsPull = si.get_next_earnings_date(symbol) ++++++++++++++++++++++++++++
+        # strEarningsDate = earningsPull.strftime("%d %b %Y ") ++++++++++++++++++++++++
         df_Earnings1['Stock'] = [symbol]
         stock_company = f"https://finance.yahoo.com/quote/{symbol}"
         soup = BeautifulSoup(requests.get(stock_company).text, "html.parser")
         df_Earnings1['Company Name'] = soup.h1.text.split('-')[0].strip()
-        df_Earnings1['Next Earnings Date'] = strEarningsDate
+        # df_Earnings1['Next Earnings Date'] = strEarningsDate ++++++++++++++++++++++++
     except KeyError:
         df_Earnings1['Stock'] = [symbol]
         df_Earnings1['Next Earnings Date'] = "No Date"
@@ -274,4 +281,3 @@ df_calculated2 = df_calculated2[['Price', '52W H', '52W L', 'P-52H%', 'P-52L%', 
 st.dataframe(df_calculated2.style.set_precision(2))
 st.dataframe(df_calculated3.style.set_precision(2))
 st.write(df2)
-
