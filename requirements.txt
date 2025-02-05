@@ -63,7 +63,7 @@ parse==1.20.2
 peewee==3.17.6
 pillow==10.4.0
 platformdirs==4.3.6
-plotly==6.0.0
+plotly
 protobuf==4.25.5
 pyarrow==17.0.0
 pydeck==0.9.1
