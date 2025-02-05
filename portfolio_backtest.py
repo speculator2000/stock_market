@@ -9,7 +9,6 @@ import plotly.express as px
 from pypfopt import risk_models, expected_returns
 from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
-from alpha_portfolio import clean_form_Symbols, start
 
 # Default parameters
 plt_style = "fivethirtyeight"
