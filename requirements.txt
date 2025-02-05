@@ -112,7 +112,7 @@ watchdog
 webencodings
 websockets
 Werkzeug
-wrapt==1.16.0
+wrapt
 yahoo-fin
 yfinance
 zipp
