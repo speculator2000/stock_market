@@ -113,7 +113,7 @@ webencodings
 websockets
 Werkzeug
 wrapt
-yahoo-fin
+yahoo-fin==0.8.9.1
 yfinance
 zipp
 zope.interface
