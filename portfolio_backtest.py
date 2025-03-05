@@ -39,7 +39,7 @@ def fetch_data(symbols, start_date, end_date):
     df = pd.DataFrame()
     for symbol in symbols:
         try:
-            df = yf.download(symbols, start=start_date, end=end_date, progress=False)['Adj Close']
+            df = yf.download(symbols, start=start_date, end=end_date, progress=False)['Close']
         except Exception as e:(
             st.warning(f"Error fetching data for {symbol}: {e}"))
     return df
