@@ -1,4 +1,4 @@
-# Portfolio Backtest Tool
+# Portfolio Alpha Backtest Tool
 import streamlit as st
 from pandas_datareader import data as pdr
 import pandas as pd
@@ -13,7 +13,11 @@ from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
 # Default parameters
 plt_style = "fivethirtyeight"
 DEFAULT_WEIGHTS = np.array([0.20, 0.20, 0.20, 0.20, 0.20])
-DEFAULT_PORTFOLIO = "^GSPC, AAPL, AMZN, INTC, CVX, NVDA, META, TSLA, GOOG, PLTR"
+DEFAULT_PORTFOLIO = "^GSPC, SYM, CRWV, KRYS, AAPL, AMZN, BBAI, BEAM, CELC, COGT, CRSP, DYN, GOOG, INTC, NVDA, META, PLTR, TSLA"
+
+# ------------------------- CONFIG -------------------------
+# Page configuration
+st.set_page_config(page_title="Alpha Backtest", layout="wide")
 
 # Title and Description
 st.markdown("<h1 style='text-align: center; color: Grey;'>Optimal Portfolio Backtest Tool</h1>", unsafe_allow_html=True)
@@ -28,7 +32,7 @@ def get_input():
     default_end_date = date.today()
     start_date = st.sidebar.date_input("Start Date", default_start_date)
     end_date = st.sidebar.date_input("End Date", default_end_date)
-    portfolio = st.sidebar.text_input("Portfolio (format: NVDA, AMZN, GOOG)", DEFAULT_PORTFOLIO).upper()
+    portfolio = st.sidebar.text_input("Portfolio (format: NVDA, PLTR, GOOG)", DEFAULT_PORTFOLIO).upper()
     total_funds = st.sidebar.number_input("Total Funds to Invest", value=100000, step=5000, format='%d')
     return start_date, end_date, portfolio, total_funds
 
