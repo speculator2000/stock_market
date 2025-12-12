@@ -130,3 +130,4 @@ yarl
 yfinance
 zipp
 zope.interface
+scikit-learn
