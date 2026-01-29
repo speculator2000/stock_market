@@ -1163,7 +1163,7 @@ class EnhancedStockDashboard:
         st.markdown(f"""
         <div class="main-header">
             <h1>{PAGE_TITLE}</h1>
-            <p>Professional-grade stock analysis and portfolio tools | Built by {AUTHOR}</p>
+            <p>Professional-grade stock analysis and portfolio tools | Built by {AUTHOR} | Data Refreshed: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}</p>
         </div>
         """, unsafe_allow_html=True)
 
