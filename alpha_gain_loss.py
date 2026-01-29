@@ -336,6 +336,7 @@ def main():
         if st.button("🔄 Refresh Data"):
             st.cache_data.clear()
             st.rerun()
+    st.sidebar.caption(f"Last Refreshed: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
     st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 
     # Fetch data
@@ -417,7 +418,7 @@ def display_stock_table(df, title, table_type):
         height=600  # Reduced height since tables are stacked
     )
 
-    st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
 
 
 if __name__ == "__main__":
