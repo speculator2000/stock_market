@@ -1284,7 +1284,7 @@ class EnhancedStockDashboard:
         st.markdown("---")
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
         with col2:
             st.caption(f"Data source: Yahoo Finance")
         with col3:
