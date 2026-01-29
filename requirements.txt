@@ -131,3 +131,4 @@ yfinance
 zipp
 zope.interface
 scikit-learn
+streamlit-nightly
