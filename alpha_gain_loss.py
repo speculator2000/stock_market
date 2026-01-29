@@ -7,6 +7,8 @@ import concurrent.futures
 from datetime import datetime
 import time
 import re
+# Set timezone in your deployment environment
+export TZ='America/New_York'
 
 # ------------------------- CONFIG -------------------------
 st.set_page_config(page_title="Alpha Gain-Loss Daily", layout="wide", page_icon="📊")
