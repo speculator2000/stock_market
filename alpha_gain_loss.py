@@ -7,8 +7,9 @@ import concurrent.futures
 from datetime import datetime
 import time
 import re
-# Set timezone in your deployment environment
-export TZ='America/New_York'
+from zoneinfo import ZoneInfo
+
+Eastern_time = datetime.now(ZoneInfo("America/New_York")) #Show Eastern Time
 
 # ------------------------- CONFIG -------------------------
 st.set_page_config(page_title="Alpha Gain-Loss Daily", layout="wide", page_icon="📊")
@@ -338,7 +339,7 @@ def main():
         if st.button("🔄 Refresh Data"):
             st.cache_data.clear()
             st.rerun()
-    st.sidebar.caption(f"Last Refreshed: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
+    st.sidebar.caption(f"Last Refreshed: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
     st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 
     # Fetch data
@@ -420,7 +421,7 @@ def display_stock_table(df, title, table_type):
         height=600  # Reduced height since tables are stacked
     )
 
-    st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
+    st.caption(f"Last updated: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
 
 
 if __name__ == "__main__":
