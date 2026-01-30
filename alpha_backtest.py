@@ -209,5 +209,4 @@ st.write(f'Uninvested balance: ${leftover:,.0f}')
 st.write(f'Portfolio value increased by {total_percent_gain:.1%}, representing a gain of ${total_gain:,.0f}')
 st.write(f'Final Portfolio value: ${final_portfolio_value:,.0f}')
 
-#st.caption(f"Updated: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
-st.sidebar.caption(f"Updated: {Eastern_time.strftime('%Y-%m-%d at %I:%M %p (Eastern)')}")
+st.sidebar.caption(f"Updated: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
