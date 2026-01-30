@@ -9,6 +9,9 @@ import plotly.express as px
 from pypfopt import risk_models, expected_returns
 from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
+from zoneinfo import ZoneInfo
+
+Eastern_time = datetime.now(ZoneInfo("America/New_York")) #Show Eastern Time
 
 # Default parameters
 plt_style = "fivethirtyeight"
@@ -206,4 +209,5 @@ st.write(f'Uninvested balance: ${leftover:,.0f}')
 st.write(f'Portfolio value increased by {total_percent_gain:.1%}, representing a gain of ${total_gain:,.0f}')
 st.write(f'Final Portfolio value: ${final_portfolio_value:,.0f}')
 
-st.caption(f"Updated: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
+#st.caption(f"Updated: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
+st.sidebar.caption(f"Updated: {Eastern_time.strftime('%Y-%m-%d at %I:%M %p (Eastern)')}")
