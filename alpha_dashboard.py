@@ -27,6 +27,9 @@ import json
 from dataclasses import dataclass
 from io import BytesIO
 import warnings
+from zoneinfo import ZoneInfo
+
+Eastern_time = datetime.now(ZoneInfo("America/New_York")) #Show Eastern Time
 
 warnings.filterwarnings('ignore')
 
@@ -1102,6 +1105,7 @@ class EnhancedStockDashboard:
                 start = end - timedelta(days=1825)
 
         st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
+      #  st.sidebar.caption(Eastern_time.strftime('%Y-%m-%d at %I:%M %p (Eastern)'))
 
         # Technical indicators selection
         st.sidebar.markdown("---")
@@ -1163,7 +1167,7 @@ class EnhancedStockDashboard:
         st.markdown(f"""
         <div class="main-header">
             <h1>{PAGE_TITLE}</h1>
-            <p>Professional-grade stock analysis and portfolio tools | Built by {AUTHOR} | Data Refreshed: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}</p>
+            <p>Professional-grade stock analysis and portfolio tools | Built by {AUTHOR} | Data updated: {Eastern_time.strftime('%Y-%m-%d at %I:%M %p (Eastern)')}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1284,7 +1288,7 @@ class EnhancedStockDashboard:
         st.markdown("---")
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d - %H:%M:%S')}")
+            st.caption(f"Last updated: {Eastern_time.strftime('%Y-%m-%d at %I:%M %p (Eastern)')}")
         with col2:
             st.caption(f"Data source: Yahoo Finance")
         with col3:
