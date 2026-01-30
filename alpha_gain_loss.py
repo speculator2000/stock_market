@@ -339,7 +339,7 @@ def main():
         if st.button("🔄 Refresh Data"):
             st.cache_data.clear()
             st.rerun()
-    st.sidebar.caption(f"Last Refreshed: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
+    st.sidebar.caption(f"Refreshed: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
     st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 
     # Fetch data
