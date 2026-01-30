@@ -1167,7 +1167,7 @@ class EnhancedStockDashboard:
         st.markdown(f"""
         <div class="main-header">
             <h1>{PAGE_TITLE}</h1>
-            <p>Professional-grade stock analysis and portfolio tools | Built by {AUTHOR} | Data updated: {Eastern_time.strftime('%Y-%m-%d at %I:%M %p (Eastern)')}</p>
+            <p>Professional-grade stock analysis and portfolio tools | Built by {AUTHOR} | Data updated: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1288,7 +1288,7 @@ class EnhancedStockDashboard:
         st.markdown("---")
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            st.caption(f"Last updated: {Eastern_time.strftime('%Y-%m-%d at %I:%M %p (Eastern)')}")
+            st.caption(f"Last updated: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
         with col2:
             st.caption(f"Data source: Yahoo Finance")
         with col3:
