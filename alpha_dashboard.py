@@ -7,7 +7,6 @@ Enhanced Stock Dashboard with Advanced Features
 - Performance benchmarking
 - Downloadable reports
 """
-
 from __future__ import annotations
 import streamlit as st
 import pandas as pd
