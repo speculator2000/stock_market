@@ -75,7 +75,7 @@ pillow
 platformdirs
 plotly
 propcache
-protobuf==3.20.x
+protobuf==3.20.3
 pyarrow
 pydeck
 pyee
