@@ -1,4 +1,7 @@
-# Portfolio Alpha Backtest Tool
+# -------------------------------------------------------------
+# Optimal Portfolio Backtest Tool — Compact UI Version
+# -------------------------------------------------------------
+
 import streamlit as st
 from pandas_datareader import data as pdr
 import pandas as pd
@@ -12,19 +15,53 @@ from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
 from zoneinfo import ZoneInfo
 
 Eastern_time = datetime.now(ZoneInfo("America/New_York"))
-
 AUTO_REFRESH_SECONDS = 18000  # 5 hours
 
-# ------------------------- PAGE CONFIG -------------------------
+# -------------------------------------------------------------
+# PAGE CONFIG  (must be first Streamlit call)
+# -------------------------------------------------------------
 st.set_page_config(page_title="Alpha Backtest", layout="wide")
 
-st.markdown("<h1 style='text-align: center; color: Grey;'>Optimal Portfolio Backtest Tool</h1>", unsafe_allow_html=True)
-st.markdown("<h6 style='text-align: center; color: Grey;'>Calculates optimal portfolio allocation and expected returns</h6>", unsafe_allow_html=True)
+# -------------------------------------------------------------
+# GLOBAL COMPACT CSS
+# -------------------------------------------------------------
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        h1, h2, h3, h4 {
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+        }
+        .stMetric {
+            padding: 0 !important;
+        }
+        hr {
+            margin: 6px 0 !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# ------------------------- SIDEBAR -------------------------
-st.sidebar.header('Configure Portfolio')
+# -------------------------------------------------------------
+# COMPACT HEADER
+# -------------------------------------------------------------
+st.markdown("""
+    <div style="text-align:center; padding: 10px 0 8px 0;">
+        <h2 style="color:#4A4A4A; margin-bottom:2px; font-size:36px;">
+            Optimal Portfolio Backtest Tool
+        </h2>
+        <p style="color:#777; font-size:16px; margin-top:0;">
+            Calculate optimal allocations, expected returns, and performance metrics
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
-# ------------------------- DEFAULTS -------------------------
+# -------------------------------------------------------------
+# SIDEBAR
+# -------------------------------------------------------------
+st.sidebar.header("Configure Portfolio")
 
 DEFAULT_PORTFOLIO = "^GSPC, SYM, CRWV, KRYS, AAPL, AMZN, BBAI, BEAM, CELC, COGT, CRSP, DYN, GOOG, INTC, NVDA, META, PLTR, TSLA"
 
@@ -34,6 +71,7 @@ def get_input():
 
     start_date = st.sidebar.date_input("Start Date", default_start_date)
     end_date = st.sidebar.date_input("End Date", default_end_date)
+
     portfolio = st.sidebar.text_input(
         "Portfolio (format: NVDA, PLTR, GOOG)",
         DEFAULT_PORTFOLIO
@@ -48,8 +86,7 @@ def get_input():
 
     return start_date, end_date, portfolio, total_funds
 
-
-@st.cache_data(ttl=300)  # 5-minute cache to protect API
+@st.cache_data(ttl=300)
 def fetch_data(symbols, start_date, end_date):
     end_date_adj = end_date + timedelta(days=1)
     try:
@@ -62,10 +99,8 @@ def fetch_data(symbols, start_date, end_date):
         return pd.DataFrame()
     return df
 
-
 def calculate_weights(symbols):
     return np.ones(len(symbols)) / len(symbols)
-
 
 def plot_prices(df, title):
     fig = px.line(df)
@@ -74,13 +109,14 @@ def plot_prices(df, title):
         yaxis_title="",
         xaxis_title="",
         title_x=0.5,
-        font=dict(family="Arial", size=11)
+        font=dict(family="Arial", size=11),
+        height=450  # compact chart height
     )
     st.plotly_chart(fig, use_container_width=True)
 
-
-# ------------------------- USER INPUT -------------------------
-
+# -------------------------------------------------------------
+# USER INPUT
+# -------------------------------------------------------------
 start_date, end_date, portfolio, funds_to_invest = get_input()
 symbols = [s.strip() for s in portfolio.split(',')]
 funds_to_invest = max(funds_to_invest, 1)
@@ -98,23 +134,27 @@ if df.empty or df.isnull().all().all():
 df = df.ffill().bfill()
 df_normalized = df / df.iloc[0]
 
+# -------------------------------------------------------------
+# PRICE CHART
+# -------------------------------------------------------------
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("<h4 style='margin-bottom:4px;'>📈 Price Performance</h4>", unsafe_allow_html=True)
+
 plot_prices(df_normalized, "Relative Daily Change Prices")
 
-# ------------------------- REFRESH CONTROLS -------------------------
-
+# -------------------------------------------------------------
+# REFRESH CONTROLS
+# -------------------------------------------------------------
 if "refresh_counter" not in st.session_state:
     st.session_state.refresh_counter = 0
 
-#st.sidebar.markdown("### 🔄 Data Refresh")
-
 manual_refresh = st.sidebar.button("Refresh")
-auto_refresh = st.sidebar.checkbox("Enable Auto Refresh (Every 5 Hours)", value=False)
+auto_refresh = st.sidebar.checkbox("Auto Refresh (Every 5 Hours)", value=False)
 
 if manual_refresh:
     st.session_state.refresh_counter += 1
     st.rerun()
 
-# Inject JavaScript auto-refresh (non-blocking, Streamlit Cloud safe)
 if auto_refresh:
     st.markdown(
         f"""
@@ -127,8 +167,9 @@ if auto_refresh:
         unsafe_allow_html=True
     )
 
-# ------------------------- PORTFOLIO ANALYSIS -------------------------
-
+# -------------------------------------------------------------
+# PORTFOLIO ANALYSIS
+# -------------------------------------------------------------
 returns = df.pct_change().dropna()
 
 if returns.empty:
@@ -142,12 +183,17 @@ portfolio_return = np.sum(returns.mean() * weights) * 252
 portfolio_variance = np.dot(weights.T, np.dot(cov_matrix_annual, weights))
 portfolio_volatility = np.sqrt(portfolio_variance)
 
-st.write(f"Expected Annual Return: {portfolio_return:.1%}")
-st.write(f"Portfolio Volatility (Risk): {portfolio_volatility:.1%}")
-st.write(f"Portfolio Variance - annualized: {portfolio_variance:.1%}")
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("<h4 style='margin-bottom:4px;'>📊 Portfolio Statistics</h4>", unsafe_allow_html=True)
 
-# ------------------------- OPTIMIZATION -------------------------
+col1, col2, col3 = st.columns(3)
+col1.metric("Expected Return", f"{portfolio_return:.1%}")
+col2.metric("Volatility", f"{portfolio_volatility:.1%}")
+col3.metric("Variance", f"{portfolio_variance:.1%}")
 
+# -------------------------------------------------------------
+# OPTIMIZATION
+# -------------------------------------------------------------
 try:
     mu = expected_returns.mean_historical_return(df)
     S = risk_models.sample_cov(df)
@@ -169,8 +215,9 @@ except Exception as e:
     st.error(f"Portfolio optimization failed: {e}")
     st.stop()
 
-# ------------------------- CALCULATIONS -------------------------
-
+# -------------------------------------------------------------
+# CALCULATIONS
+# -------------------------------------------------------------
 start_prices = df.iloc[0]
 end_prices = df.iloc[-1]
 
@@ -195,16 +242,18 @@ leftover = funds_to_invest - total_invested
 final_portfolio_value = total_invested + total_gain + leftover
 total_percent_gain = total_gain / total_invested if total_invested > 0 else 0
 
-# ------------------------- DISPLAY -------------------------
-
-st.write("Optimal Portfolio Allocation")
+# -------------------------------------------------------------
+# DISPLAY RESULTS
+# -------------------------------------------------------------
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("<h4 style='margin-bottom:4px;'>📌 Optimal Portfolio Allocation</h4>", unsafe_allow_html=True)
 
 merged_df = merged_df.sort_values(by="Weight", ascending=False)
 
 display_df = merged_df[['Weight', '#Shares', 'Start Price', 'End Price',
                         'Investment', '%Change', '$Gain/Loss', 'Total']]
 
-st.dataframe(display_df.style.format({
+styled_df = display_df.style.format({
     "Weight": "{:.1f}%",
     "#Shares": "{:.0f}",
     "Start Price": "${:,.2f}",
@@ -213,13 +262,28 @@ st.dataframe(display_df.style.format({
     "%Change": "{:.1f}%",
     "Total": "${:,.0f}",
     "$Gain/Loss": "${:,.0f}"
-}))
+}).background_gradient(
+    subset=["%Change", "$Gain/Loss"], cmap="RdYlGn"
+).set_properties(**{
+    'text-align': 'center',
+    'font-size': '12px'
+})
 
-st.write(f"Total funds available: ${funds_to_invest:,.0f}")
-st.write(f"Total funds invested: ${total_invested:,.0f}")
-st.write(f"Uninvested balance: ${leftover:,.0f}")
-st.write(f"Portfolio value increased by {total_percent_gain:.1%}, representing a gain of ${total_gain:,.0f}")
-st.write(f"Final Portfolio value: ${final_portfolio_value:,.0f}")
+st.dataframe(styled_df, use_container_width=True, height=350)
 
+# -------------------------------------------------------------
+# SUMMARY METRICS
+# -------------------------------------------------------------
+st.markdown("<h4 style='margin-bottom:4px;'>💼 Portfolio Summary</h4>", unsafe_allow_html=True)
+
+colA, colB, colC, colD = st.columns(4)
+colA.metric("Invested", f"${total_invested:,.0f}")
+colB.metric("Uninvested", f"${leftover:,.0f}")
+colC.metric("Gain / Loss", f"${total_gain:,.0f}", f"{total_percent_gain:.1%}")
+colD.metric("Final Value", f"${final_portfolio_value:,.0f}")
+
+# -------------------------------------------------------------
+# FOOTER
+# -------------------------------------------------------------
 st.sidebar.caption("ⓒ Franklin Chidi (FC) - MIT License")
 st.sidebar.caption(f"Refreshed: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
