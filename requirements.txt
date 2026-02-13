@@ -101,7 +101,7 @@ sgmllib3k
 six
 smmap
 soupsieve
-streamlit
+streamlit==1.54.0
 ta
 tenacity
 tensorboard
