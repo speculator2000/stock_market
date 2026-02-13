@@ -48,7 +48,7 @@ st.markdown("""
 # COMPACT HEADER
 # -------------------------------------------------------------
 st.markdown("""
-    <div style="text-align:center; padding: 10px 0 8px 0;">
+    <div style="text-align:center; padding: 14px 0 8px 0;">
         <h2 style="color:#4A4A4A; margin-bottom:2px; font-size:36px;">
             Optimal Portfolio Backtest Tool
         </h2>
