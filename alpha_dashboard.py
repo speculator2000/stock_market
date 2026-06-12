@@ -36,7 +36,7 @@ warnings.filterwarnings('ignore')
 APP_TITLE = "📈 Alpha Dashboard"
 PAGE_TITLE = "Advanced Stock Analysis Dashboard"
 AUTHOR = "FC"
-DEFAULT_SYMBOL = "BBAI"
+DEFAULT_SYMBOL = "NVDA"
 DEFAULT_BENCHMARK = "SPY"
 DEFAULT_DAYS_BACK = 365
 CACHE_TTL = 1800  # 30 minutes
