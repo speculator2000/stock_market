@@ -56,77 +56,301 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------- Custom CSS ----------
-st.markdown("""
-<style>
-    /* Main containers */
-    .main-header {
-        padding: 1rem 0;
-        border-bottom: 2px solid #e0e0e0;
-        margin-bottom: 1.5rem;
-    }
+# =============================================================================
+# DESIGN SYSTEM
+# -----------------------------------------------------------------------------
+# Same research-desk aesthetic used across the Risk Management Model: ink
+# slate + ledger ivory, deep emerald / antique gold accents, Fraunces for
+# display type, Inter for body text, IBM Plex Mono for figures. Kept quiet
+# (low contrast, compact spacing) to match.
+# =============================================================================
 
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
-        padding: 1rem;
-        color: white;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+PALETTE = {
+    "ink": "#2B3B50",        # soft slate navy — sidebar, headings
+    "ink_2": "#374B65",      # secondary ink surface
+    "paper": "#F6F4EE",      # warm ivory — page background
+    "paper_2": "#EFEBE0",    # card / metric surface
+    "rule": "rgba(43,59,80,0.10)",   # hairline dividers
+    "text": "#33404F",       # body text on paper
+    "muted": "#697787",      # secondary text
+    "paper_text": "#D9D4C7", # text on ink surfaces
+    "emerald": "#33604F",    # primary accent — gains, confidence
+    "emerald_soft": "rgba(51,96,79,0.08)",
+    "gold": "#B0925F",       # secondary accent — highlights, rules
+    "gold_soft": "rgba(176,146,95,0.12)",
+    "burgundy": "#8A4A4A",   # risk / loss accent
+    "burgundy_soft": "rgba(138,74,74,0.08)",
+}
 
-    .info-card {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 1rem;
-        border-left: 4px solid #007bff;
-    }
+PLOTLY_COLORWAY = [
+    PALETTE["emerald"], PALETTE["gold"], PALETTE["burgundy"],
+    "#3F6B57", "#8C6E4A", "#4A5A73",
+]
 
-    .warning-card {
-        background: #fff3cd;
-        border-radius: 10px;
-        padding: 1rem;
-        border-left: 4px solid #ffc107;
-    }
 
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 2px;
-    }
+def inject_design_system():
+    st.markdown(
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #f0f2f6;
-        border-radius: 4px 4px 0 0;
-        gap: 1px;
-        padding: 10px 16px;
-    }
+        html, body, [class*="css"] {{
+            font-family: 'Inter', -apple-system, sans-serif;
+        }}
 
-    /* Data table styling */
-    .dataframe {
-        border-collapse: collapse;
-        width: 100%;
-    }
+        .stApp {{
+            background: {PALETTE["paper"]};
+            color: {PALETTE["text"]};
+            font-size: 0.92rem;
+        }}
 
-    .dataframe th {
-        background-color: #f8f9fa;
-        font-weight: bold;
-        text-align: left;
-        padding: 8px;
-        border-bottom: 2px solid #dee2e6;
-    }
+        .block-container {{
+            padding-top: 1.6rem !important;
+            padding-bottom: 1.5rem !important;
+            max-width: 1300px;
+        }}
 
-    .dataframe td {
-        padding: 8px;
-        border-bottom: 1px solid #dee2e6;
-    }
+        /* ---------- Typography ---------- */
+        h1, h2, h3, h4 {{
+            font-family: 'Fraunces', serif !important;
+            color: {PALETTE["ink"]} !important;
+            font-weight: 500 !important;
+            letter-spacing: -0.01em;
+        }}
+        h3 {{
+            border-bottom: 1px solid {PALETTE["rule"]};
+            padding-bottom: 0.3rem;
+            margin-top: 1.1rem !important;
+            margin-bottom: 0.6rem !important;
+            font-size: 1.15rem !important;
+        }}
+        .eyebrow {{
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+            color: {PALETTE["gold"]};
+            margin-bottom: 0.1rem;
+        }}
 
-    /* Progress bar */
-    .stProgress > div > div > div > div {
-        background-color: #007bff;
-    }
-</style>
-""", unsafe_allow_html=True)
+        /* ---------- Masthead ---------- */
+        .masthead {{
+            border-top: 2px solid {PALETTE["ink"]};
+            border-bottom: 1px solid {PALETTE["rule"]};
+            padding: 0.5rem 0 0.6rem 0;
+            margin-bottom: 0.9rem;
+        }}
+        .masthead .eyebrow {{ margin-bottom: 0.2rem; }}
+        .masthead h1 {{
+            font-size: 1.55rem !important;
+            margin: 0 !important;
+            line-height: 1.15;
+        }}
+        .masthead .dek {{
+            font-family: 'Inter', sans-serif;
+            color: {PALETTE["muted"]};
+            font-size: 0.82rem;
+            margin-top: 0.2rem;
+        }}
+        .masthead .meta {{
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.68rem;
+            color: {PALETTE["muted"]};
+            letter-spacing: 0.02em;
+            margin-top: 0.3rem;
+        }}
+
+        /* ---------- Cards (used for company info / stats blocks) ---------- */
+        .metric-card, .info-card {{
+            background: {PALETTE["paper_2"]};
+            border: 1px solid {PALETTE["rule"]};
+            border-radius: 6px;
+            padding: 0.7rem 0.85rem;
+        }}
+        .warning-card {{
+            background: {PALETTE["gold_soft"]};
+            border: 1px solid {PALETTE["rule"]};
+            border-left: 3px solid {PALETTE["gold"]};
+            border-radius: 6px;
+            padding: 0.7rem 0.85rem;
+        }}
+
+        /* ---------- Sidebar ---------- */
+        [data-testid="stSidebar"] {{
+            background: {PALETTE["ink"]};
+        }}
+        [data-testid="stSidebar"] * {{
+            color: {PALETTE["paper_text"]} !important;
+        }}
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {{
+            font-family: 'Fraunces', serif !important;
+            font-weight: 500 !important;
+            color: {PALETTE["paper_text"]} !important;
+            border-bottom: 1px solid rgba(217,212,199,0.14);
+            padding-bottom: 0.3rem;
+            margin-top: 0.4rem !important;
+            margin-bottom: 0.4rem !important;
+            font-size: 1.05rem !important;
+        }}
+        [data-testid="stSidebar"] .eyebrow {{ color: {PALETTE["gold"]}; }}
+        [data-testid="stSidebar"] hr {{
+            border-color: rgba(217,212,199,0.12) !important;
+            margin: 0.6rem 0 !important;
+        }}
+        [data-testid="stSidebar"] label {{ color: {PALETTE["paper_text"]} !important; opacity: 0.8; }}
+        [data-testid="stSidebar"] .block-container {{ padding-top: 1.2rem !important; }}
+
+        [data-testid="stSidebar"] input,
+        [data-testid="stSidebar"] [data-baseweb="select"] > div {{
+            background: {PALETTE["ink_2"]} !important;
+            border: 1px solid rgba(217,212,199,0.16) !important;
+            color: {PALETTE["paper_text"]} !important;
+            border-radius: 4px !important;
+        }}
+
+        /* ---------- Buttons ---------- */
+        .stButton > button, button[kind="primary"] {{
+            background: {PALETTE["emerald"]} !important;
+            color: {PALETTE["paper_text"]} !important;
+            border: 1px solid {PALETTE["emerald"]} !important;
+            border-radius: 4px !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            font-size: 0.74rem !important;
+            padding: 0.35rem 0.85rem !important;
+            transition: all 0.15s ease-in-out;
+        }}
+        .stButton > button:hover, button[kind="primary"]:hover {{
+            background: {PALETTE["ink"]} !important;
+            border-color: {PALETTE["gold"]} !important;
+            color: {PALETTE["gold"]} !important;
+        }}
+
+        /* ---------- Metrics ---------- */
+        [data-testid="stMetric"] {{
+            background: {PALETTE["paper_2"]};
+            border: 1px solid {PALETTE["rule"]};
+            border-radius: 6px;
+            padding: 0.5rem 0.65rem 0.4rem 0.65rem;
+        }}
+        [data-testid="stMetricLabel"] {{
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.66rem !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: {PALETTE["muted"]} !important;
+        }}
+        [data-testid="stMetricValue"] {{
+            font-family: 'IBM Plex Mono', monospace !important;
+            color: {PALETTE["ink"]} !important;
+            font-weight: 500 !important;
+            font-size: 1.3rem !important;
+        }}
+
+        /* ---------- Tabs ---------- */
+        .stTabs [data-baseweb="tab-list"] {{ gap: 2px; }}
+        .stTabs [data-baseweb="tab"] {{
+            height: 40px;
+            white-space: pre-wrap;
+            background-color: {PALETTE["paper_2"]};
+            border-radius: 4px 4px 0 0;
+            gap: 1px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            color: {PALETTE["text"]};
+        }}
+        .stTabs [aria-selected="true"] {{
+            background-color: {PALETTE["ink"]} !important;
+            color: {PALETTE["paper_text"]} !important;
+        }}
+
+        /* ---------- Dataframes & expanders ---------- */
+        [data-testid="stDataFrame"] {{
+            border: 1px solid {PALETTE["rule"]};
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }}
+        [data-testid="stExpander"] {{
+            border: 1px solid {PALETTE["rule"]} !important;
+            border-radius: 6px !important;
+            background: {PALETTE["paper_2"]};
+        }}
+
+        /* ---------- Progress bar ---------- */
+        .stProgress > div > div > div > div {{ background-color: {PALETTE["emerald"]}; }}
+
+        /* ---------- Rules ---------- */
+        hr {{ border-color: {PALETTE["rule"]} !important; margin: 0.6rem 0 !important; }}
+
+        /* ---------- Section header block ---------- */
+        .section-head h2, .section-head h3 {{ margin-top: 0 !important; }}
+
+        /* ---------- General compaction ---------- */
+        div[data-testid="stVerticalBlock"] {{ gap: 0.5rem; }}
+        div[data-testid="stHorizontalBlock"] {{ gap: 0.6rem; }}
+        .element-container {{ margin-bottom: 0.15rem !important; }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def masthead(eyebrow, title, dek, meta):
+    st.markdown(
+        f"""
+        <div class="masthead">
+            <span class="eyebrow">{eyebrow}</span>
+            <h1>{title}</h1>
+            <div class="dek">{dek}</div>
+            <div class="meta">{meta}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def section_header(eyebrow, title, level="h3"):
+    st.markdown(
+        f"""
+        <div class="section-head">
+            <span class="eyebrow">{eyebrow}</span>
+            <{level}>{title}</{level}>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def themed_layout(fig, height=None, title=None):
+    """Apply the house plotly theme to a figure in place, and return it."""
+    layout_kwargs = dict(
+        paper_bgcolor=PALETTE["paper"],
+        plot_bgcolor=PALETTE["paper"],
+        font=dict(family="Inter, sans-serif", color=PALETTE["text"], size=12),
+        colorway=PLOTLY_COLORWAY,
+        margin=dict(t=46 if title else 20, l=10, r=10, b=10),
+        legend=dict(font=dict(family="Inter, sans-serif", size=11)),
+    )
+    if title:
+        layout_kwargs["title"] = dict(
+            text=title, font=dict(family="Fraunces, serif", size=14, color=PALETTE["ink"])
+        )
+    if height:
+        layout_kwargs["height"] = height
+    fig.update_layout(**layout_kwargs)
+    fig.update_xaxes(gridcolor="rgba(43,59,80,0.08)", zerolinecolor="rgba(43,59,80,0.15)", linecolor=PALETTE["rule"])
+    fig.update_yaxes(gridcolor="rgba(43,59,80,0.08)", zerolinecolor="rgba(43,59,80,0.15)", linecolor=PALETTE["rule"])
+    return fig
+
+
+inject_design_system()
 
 
 # ---------- Data Classes ----------
@@ -775,7 +999,7 @@ class EnhancedVisualizer:
                     x=df.index,
                     y=df['SMA_20'],
                     name='SMA 20',
-                    line=dict(color='orange', width=1)
+                    line=dict(color=PALETTE["gold"], width=1)
                 ),
                 row=1, col=1
             )
@@ -786,7 +1010,7 @@ class EnhancedVisualizer:
                     x=df.index,
                     y=df['SMA_50'],
                     name='SMA 50',
-                    line=dict(color='red', width=1)
+                    line=dict(color=PALETTE["burgundy"], width=1)
                 ),
                 row=1, col=1
             )
@@ -798,7 +1022,7 @@ class EnhancedVisualizer:
                     x=df.index,
                     y=df['BB_Upper'],
                     name='BB Upper',
-                    line=dict(color='gray', width=0.5, dash='dash'),
+                    line=dict(color=PALETTE["muted"], width=0.5, dash='dash'),
                     showlegend=False
                 ),
                 row=1, col=1
@@ -808,9 +1032,9 @@ class EnhancedVisualizer:
                     x=df.index,
                     y=df['BB_Lower'],
                     name='BB Lower',
-                    line=dict(color='gray', width=0.5, dash='dash'),
+                    line=dict(color=PALETTE["muted"], width=0.5, dash='dash'),
                     fill='tonexty',
-                    fillcolor='rgba(128,128,128,0.1)',
+                    fillcolor='rgba(105,119,135,0.10)',
                     showlegend=False
                 ),
                 row=1, col=1
@@ -818,7 +1042,7 @@ class EnhancedVisualizer:
 
         # Volume
         if 'Volume' in df.columns and 'Open_Price' in df.columns and 'Close_Price' in df.columns:
-            colors = ['green' if close >= open else 'red'
+            colors = [PALETTE["emerald"] if close >= open else PALETTE["burgundy"]
                       for close, open in zip(df['Close_Price'], df['Open_Price'])]
 
             fig.add_trace(
@@ -839,21 +1063,16 @@ class EnhancedVisualizer:
                     x=df.index,
                     y=df['RSI_14'],
                     name='RSI',
-                    line=dict(color='purple', width=1)
+                    line=dict(color=PALETTE["ink_2"], width=1)
                 ),
                 row=3, col=1
             )
-            fig.add_hline(y=70, line_dash="dash", line_color="red", row=3, col=1)
-            fig.add_hline(y=30, line_dash="dash", line_color="green", row=3, col=1)
+            fig.add_hline(y=70, line_dash="dash", line_color=PALETTE["burgundy"], row=3, col=1)
+            fig.add_hline(y=30, line_dash="dash", line_color=PALETTE["emerald"], row=3, col=1)
             fig.update_yaxes(range=[0, 100], row=3, col=1)
 
-        fig.update_layout(
-            height=800,
-            title=f"{symbol} - Interactive Chart",
-            xaxis_rangeslider_visible=False,
-            hovermode='x unified',
-            template='plotly_white'
-        )
+        themed_layout(fig, height=640, title=f"{symbol} \u00b7 Interactive Chart")
+        fig.update_layout(xaxis_rangeslider_visible=False, hovermode='x unified')
 
         return fig
 
@@ -889,13 +1108,17 @@ class EnhancedVisualizer:
             fig = px.imshow(
                 corr_matrix,
                 text_auto='.2f',
-                color_continuous_scale='RdBu',
+                color_continuous_scale=[
+                    [0.0, PALETTE["burgundy"]],
+                    [0.5, PALETTE["paper"]],
+                    [1.0, PALETTE["emerald"]],
+                ],
                 zmin=-1,
                 zmax=1,
                 title=f'Returns Correlation Matrix ({period})'
             )
 
-            fig.update_layout(height=600)
+            themed_layout(fig, height=460, title=f'Returns Correlation Matrix ({period})')
             return fig
         except Exception:
             return go.Figure()
@@ -920,7 +1143,7 @@ class EnhancedVisualizer:
                     x=list(range(paths.shape[0])),
                     y=paths[:, i],
                     mode='lines',
-                    line=dict(width=0.5, color='rgba(0,100,80,0.1)'),
+                    line=dict(width=0.5, color='rgba(43,59,80,0.10)'),
                     showlegend=False
                 )
             )
@@ -937,7 +1160,7 @@ class EnhancedVisualizer:
                     x=list(range(paths.shape[0])) + list(range(paths.shape[0]))[::-1],
                     y=list(upper_bound) + list(lower_bound[::-1]),
                     fill='toself',
-                    fillcolor='rgba(0,100,80,0.2)',
+                    fillcolor=PALETTE["emerald_soft"],
                     line=dict(color='rgba(255,255,255,0)'),
                     name=f'{confidence_level:.0%} Confidence Interval'
                 )
@@ -948,7 +1171,7 @@ class EnhancedVisualizer:
                 go.Scatter(
                     x=list(range(paths.shape[0])),
                     y=median_path,
-                    line=dict(color='red', width=2),
+                    line=dict(color=PALETTE["burgundy"], width=2),
                     name='Median Path'
                 )
             )
@@ -959,17 +1182,12 @@ class EnhancedVisualizer:
         fig.add_hline(
             y=initial_price,
             line_dash="dash",
-            line_color="green",
+            line_color=PALETTE["gold"],
             annotation_text="Initial Price"
         )
 
-        fig.update_layout(
-            title="Monte Carlo Simulation - Future Price Paths",
-            xaxis_title="Days Ahead",
-            yaxis_title="Price",
-            hovermode='x',
-            height=500
-        )
+        themed_layout(fig, height=380, title="Monte Carlo Simulation \u00b7 Future Price Paths")
+        fig.update_layout(xaxis_title="Days Ahead", yaxis_title="Price", hovermode='x')
 
         return fig
 
@@ -1061,7 +1279,8 @@ class EnhancedStockDashboard:
 
     def sidebar(self) -> Dict[str, Any]:
         """Create enhanced sidebar with more options"""
-        st.sidebar.markdown("## ⚙️ Dashboard Configuration")
+        st.sidebar.markdown('<span class="eyebrow">Desk Setup</span>', unsafe_allow_html=True)
+        st.sidebar.markdown("## Dashboard Configuration")
 
         # Symbol input with validation
         symbol = st.sidebar.text_input(
@@ -1108,7 +1327,7 @@ class EnhancedStockDashboard:
 
         # Technical indicators selection
         st.sidebar.markdown("---")
-        st.sidebar.markdown("### 📊 Technical Indicators")
+        st.sidebar.markdown("### Technical Indicators")
 
         indicators = {
             'Moving Averages': st.sidebar.checkbox("Moving Averages", True),
@@ -1121,7 +1340,7 @@ class EnhancedStockDashboard:
 
         # Advanced features
         st.sidebar.markdown("---")
-        st.sidebar.markdown("### 🔧 Advanced Features")
+        st.sidebar.markdown("### Advanced Features")
 
         advanced = {
             'monte_carlo': st.sidebar.checkbox("Monte Carlo Simulation", False),
@@ -1132,7 +1351,7 @@ class EnhancedStockDashboard:
 
         # Watchlist management
         st.sidebar.markdown("---")
-        st.sidebar.markdown("### 📋 Watchlist")
+        st.sidebar.markdown("### Watchlist")
 
         watchlist_symbol = st.sidebar.text_input("Add to watchlist", "")
         if st.sidebar.button("Add") and watchlist_symbol:
@@ -1163,12 +1382,12 @@ class EnhancedStockDashboard:
     def run(self):
         """Main application loop"""
         # Header
-        st.markdown(f"""
-        <div class="main-header">
-            <h1>{PAGE_TITLE}</h1>
-            <p>Professional-grade stock analysis and portfolio tools | Built by {AUTHOR} | Data updated: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        masthead(
+            eyebrow="Alpha Dashboard &middot; Equity Research",
+            title=PAGE_TITLE,
+            dek=f"Professional-grade stock analysis and portfolio tools &middot; built by {AUTHOR}",
+            meta=f"Data updated {Eastern_time.strftime('%d %b %Y &middot; %H:%M')} Eastern",
+        )
 
         # Get configuration from sidebar
         config = self.sidebar()
@@ -1251,12 +1470,12 @@ class EnhancedStockDashboard:
 
         # Create tabs
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-            "📊 Overview",
-            "📈 Technical Analysis",
-            "🔄 Comparison",
-            "📉 Risk Analysis",
-            "💼 Portfolio",
-            "📋 Data & Export"
+            "Overview",
+            "Technical Analysis",
+            "Comparison",
+            "Risk Analysis",
+            "Portfolio",
+            "Data & Export"
         ])
 
         # Tab 1: Overview
@@ -1291,7 +1510,7 @@ class EnhancedStockDashboard:
         with col2:
             st.caption(f"Data source: Yahoo Finance")
         with col3:
-            if st.button("🔄 Refresh Data"):
+            if st.button("Refresh Data"):
                 st.session_state.last_refresh = datetime.now()
                 st.rerun()
 
@@ -1301,7 +1520,7 @@ class EnhancedStockDashboard:
         self.visualizer.create_metrics_dashboard(info, df, metrics)
 
         # Main chart
-        st.markdown("### 📈 Price Chart with Indicators")
+        section_header("Overview", "Price Chart with Indicators")
         try:
             chart_data = df.tail(252) if len(df) > 252 else df
             fig = self.visualizer.create_interactive_chart(chart_data, config['symbol'])
@@ -1317,7 +1536,7 @@ class EnhancedStockDashboard:
         col1, col2 = st.columns([2, 1])
 
         with col1:
-            st.markdown("### 🏢 Company Information")
+            section_header("Overview", "Company Information")
             st.markdown('<div class="info-card">', unsafe_allow_html=True)
 
             # Basic info
@@ -1336,13 +1555,13 @@ class EnhancedStockDashboard:
             st.markdown('</div>', unsafe_allow_html=True)
 
             # Business summary
-            st.markdown("### 📝 Business Summary")
+            section_header("Overview", "Business Summary")
             st.markdown('<div class="info-card">', unsafe_allow_html=True)
             st.write(info.get('longBusinessSummary', 'No description available.'))
             st.markdown('</div>', unsafe_allow_html=True)
 
         with col2:
-            st.markdown("### 📊 Key Statistics")
+            section_header("Overview", "Key Statistics")
             st.markdown('<div class="info-card">', unsafe_allow_html=True)
 
             try:
@@ -1365,7 +1584,7 @@ class EnhancedStockDashboard:
 
             # News feed
             if config['advanced']['news_feed']:
-                st.markdown("### 📰 Recent News")
+                section_header("Overview", "Recent News")
                 try:
                     news = self.data_service.fetch_news(config['symbol'], max_articles=3)
                     if news:
@@ -1385,10 +1604,10 @@ class EnhancedStockDashboard:
 
     def render_technical_tab(self, config, df):
         """Render technical analysis tab"""
-        st.markdown("## 🔍 Technical Analysis")
+        section_header("Analysis", "Technical Analysis", level="h2")
 
         # Support and resistance levels
-        st.markdown("### 📍 Support & Resistance Levels")
+        section_header("Levels", "Support & Resistance Levels")
         col1, col2 = st.columns(2)
 
         try:
@@ -1413,7 +1632,7 @@ class EnhancedStockDashboard:
             st.warning("Unable to calculate support/resistance levels")
 
         # Indicator charts
-        st.markdown("### 📊 Technical Indicators")
+        section_header("Indicators", "Technical Indicators")
 
         # MACD
         if 'MACD' in df.columns and 'MACD_Signal' in df.columns:
@@ -1426,9 +1645,9 @@ class EnhancedStockDashboard:
                         x=df.index,
                         y=df['MACD_Diff'],
                         name='Histogram',
-                        marker_color=np.where(df['MACD_Diff'] >= 0, 'green', 'red')
+                        marker_color=np.where(df['MACD_Diff'] >= 0, PALETTE["emerald"], PALETTE["burgundy"])
                     ))
-                fig_macd.update_layout(title="MACD", height=300)
+                themed_layout(fig_macd, height=260, title="MACD")
                 st.plotly_chart(fig_macd, use_container_width=True)
             except Exception:
                 st.warning("Unable to display MACD chart")
@@ -1439,11 +1658,12 @@ class EnhancedStockDashboard:
             with col1:
                 try:
                     fig_rsi = go.Figure()
-                    fig_rsi.add_trace(go.Scatter(x=df.index, y=df['RSI_14'], name='RSI'))
-                    fig_rsi.add_hline(y=70, line_dash="dash", line_color="red")
-                    fig_rsi.add_hline(y=30, line_dash="dash", line_color="green")
+                    fig_rsi.add_trace(go.Scatter(x=df.index, y=df['RSI_14'], name='RSI',
+                                                  line=dict(color=PALETTE["ink_2"])))
+                    fig_rsi.add_hline(y=70, line_dash="dash", line_color=PALETTE["burgundy"])
+                    fig_rsi.add_hline(y=30, line_dash="dash", line_color=PALETTE["emerald"])
                     fig_rsi.update_yaxes(range=[0, 100])
-                    fig_rsi.update_layout(title="RSI (14)", height=300)
+                    themed_layout(fig_rsi, height=260, title="RSI (14)")
                     st.plotly_chart(fig_rsi, use_container_width=True)
                 except Exception:
                     st.warning("Unable to display RSI chart")
@@ -1467,10 +1687,10 @@ class EnhancedStockDashboard:
 
     def render_comparison_tab(self, config, df, benchmark_df):
         """Render comparison tab"""
-        st.markdown("## 🔄 Comparison Analysis")
+        section_header("Comparison", "Comparison Analysis", level="h2")
 
         # Sector comparison
-        st.markdown("### 📊 Sector Comparison")
+        section_header("Sectors", "Sector Comparison")
         sector = st.selectbox(
             "Select sector for comparison",
             list(EnhancedDataService.SECTOR_ETFS.keys())
@@ -1503,11 +1723,8 @@ class EnhancedStockDashboard:
                             mode='lines'
                         ))
 
-                    fig.update_layout(
-                        title="Normalized Price Comparison (Base 100)",
-                        yaxis_title="Normalized Price",
-                        height=400
-                    )
+                    themed_layout(fig, height=340, title="Normalized Price Comparison (Base 100)")
+                    fig.update_layout(yaxis_title="Normalized Price")
                     st.plotly_chart(fig, use_container_width=True)
                 else:
                     st.info("Insufficient data for comparison")
@@ -1517,7 +1734,7 @@ class EnhancedStockDashboard:
             st.info("Sector data not available for comparison")
 
         # Correlation analysis
-        st.markdown("### 📈 Correlation Matrix")
+        section_header("Structure", "Correlation Matrix")
 
         # Get watchlist data
         symbols_to_compare = [config['symbol'], config['benchmark']] + config['watchlist'][
@@ -1552,7 +1769,7 @@ class EnhancedStockDashboard:
 
     def render_risk_tab(self, config, df, metrics):
         """Render risk analysis tab"""
-        st.markdown("## 📉 Risk Analysis")
+        section_header("Downside", "Risk Analysis", level="h2")
 
         # Key risk metrics
         col1, col2, col3, col4 = st.columns(4)
@@ -1571,7 +1788,7 @@ class EnhancedStockDashboard:
 
         # Monte Carlo simulation
         if config['advanced']['monte_carlo']:
-            st.markdown("### 🎲 Monte Carlo Simulation")
+            section_header("Projection", "Monte Carlo Simulation")
 
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -1605,7 +1822,7 @@ class EnhancedStockDashboard:
 
                                 # Statistics
                                 final_prices = paths[-1, :]
-                                st.markdown("#### Simulation Statistics")
+                                section_header("Projection", "Simulation Statistics", level="h4")
                                 col1, col2, col3, col4 = st.columns(4)
 
                                 with col1:
@@ -1631,7 +1848,7 @@ class EnhancedStockDashboard:
                         st.error("Error running Monte Carlo simulation")
 
         # Risk metrics table
-        st.markdown("### 📊 Complete Risk Metrics")
+        section_header("Ratios", "Complete Risk Metrics")
         try:
             risk_metrics_df = pd.DataFrame({
                 'Metric': [
@@ -1681,7 +1898,7 @@ class EnhancedStockDashboard:
 
     def render_portfolio_tab(self, config, df):
         """Render portfolio analysis tab"""
-        st.markdown("## 💼 Portfolio Analysis")
+        section_header("Holdings", "Portfolio Analysis", level="h2")
 
         if config['advanced']['portfolio_analysis']:
             # Get portfolio symbols
@@ -1715,7 +1932,7 @@ class EnhancedStockDashboard:
 
                         if not returns_df.empty and returns_df.shape[1] >= 2:
                             # Portfolio optimizer
-                            st.markdown("### 🎯 Portfolio Optimization")
+                            section_header("Optimization", "Portfolio Optimization")
 
                             # Current weights (equal weight by default)
                             current_weights = np.ones(len(returns_df.columns)) / len(returns_df.columns)
@@ -1751,7 +1968,11 @@ class EnhancedStockDashboard:
                                             x='volatility',
                                             y='return',
                                             color='sharpe',
-                                            color_continuous_scale='viridis',
+                                            color_continuous_scale=[
+                                                [0.0, PALETTE["burgundy"]],
+                                                [0.5, PALETTE["gold"]],
+                                                [1.0, PALETTE["emerald"]],
+                                            ],
                                             title='Efficient Frontier'
                                         )
 
@@ -1760,7 +1981,7 @@ class EnhancedStockDashboard:
                                             x=[current_metrics.get('annual_volatility', 0)],
                                             y=[current_metrics.get('annual_return', 0)],
                                             mode='markers',
-                                            marker=dict(size=15, color='red'),
+                                            marker=dict(size=13, color=PALETTE["ink"]),
                                             name='Current Portfolio'
                                         ))
 
@@ -1770,15 +1991,15 @@ class EnhancedStockDashboard:
                                             x=[frontier_df.loc[max_sharpe_idx, 'volatility']],
                                             y=[frontier_df.loc[max_sharpe_idx, 'return']],
                                             mode='markers',
-                                            marker=dict(size=15, color='green', symbol='star'),
+                                            marker=dict(size=15, color=PALETTE["emerald"], symbol='star'),
                                             name='Max Sharpe'
                                         ))
 
-                                        fig.update_layout(height=500)
+                                        themed_layout(fig, height=380, title='Efficient Frontier')
                                         st.plotly_chart(fig, use_container_width=True)
 
                                         # Show optimal portfolio weights
-                                        st.markdown("#### 🏆 Optimal Portfolio (Max Sharpe Ratio)")
+                                        section_header("Optimization", "Optimal Portfolio (Max Sharpe Ratio)", level="h4")
                                         optimal_weights = frontier_df.loc[max_sharpe_idx, 'weights']
 
                                         weights_df = pd.DataFrame({
@@ -1818,10 +2039,10 @@ class EnhancedStockDashboard:
 
     def render_data_tab(self, config, df, info, metrics):
         """Render data and export tab"""
-        st.markdown("## 📋 Data & Export")
+        section_header("Records", "Data & Export", level="h2")
 
         # Data preview
-        st.markdown("### 📊 Data Preview")
+        section_header("Records", "Data Preview")
 
         # Show last N rows
         preview_rows = st.slider("Rows to show", 10, 100, 20, key="preview_rows")
@@ -1831,7 +2052,7 @@ class EnhancedStockDashboard:
             st.warning("Unable to display data preview")
 
         # Export options
-        st.markdown("### 💾 Export Data")
+        section_header("Records", "Export Data")
 
         col1, col2, col3 = st.columns(3)
 
