@@ -33,7 +33,7 @@ Eastern_time = datetime.now(ZoneInfo("America/New_York")) #Show Eastern Time
 warnings.filterwarnings('ignore')
 
 # ---------- Configuration ----------
-APP_TITLE = "📈 Alpha Dashboard"
+APP_TITLE = "Alpha Dashboard"
 PAGE_TITLE = "Advanced Stock Analysis Dashboard"
 AUTHOR = "FC"
 DEFAULT_SYMBOL = "NVDA"
