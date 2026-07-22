@@ -23,46 +23,211 @@ st.set_page_config(
     page_icon="📊"
 )
 
-# -------------------------------------------------------------
-# GLOBAL COMPACT CSS
-# -------------------------------------------------------------
-st.markdown("""
-    <style>
-        .block-container {
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-        }
-        h1, h2, h3, h4 {
+# =============================================================================
+# DESIGN SYSTEM
+# -----------------------------------------------------------------------------
+# Same research-desk aesthetic used across the other apps in this suite: ink
+# slate + ledger ivory, deep emerald / antique gold accents, Fraunces for
+# display type, Inter for body text, IBM Plex Mono for figures.
+# =============================================================================
+
+PALETTE = {
+    "ink": "#2B3B50",        # soft slate navy — sidebar, headings
+    "ink_2": "#374B65",      # secondary ink surface
+    "paper": "#F6F4EE",      # warm ivory — page background
+    "paper_2": "#EFEBE0",    # card / metric surface
+    "rule": "rgba(43,59,80,0.10)",   # hairline dividers
+    "text": "#33404F",       # body text on paper
+    "muted": "#697787",      # secondary text
+    "paper_text": "#D9D4C7", # text on ink surfaces
+    "emerald": "#33604F",    # primary accent — gainers, gains
+    "gold": "#B0925F",       # secondary accent — highlights, rules
+    "burgundy": "#8A4A4A",   # losers, risk / loss accent
+}
+
+
+def inject_design_system():
+    st.markdown(
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+        html, body, [class*="css"] {{
+            font-family: 'Inter', -apple-system, sans-serif;
+        }}
+
+        .stApp {{
+            background: {PALETTE["paper"]};
+            color: {PALETTE["text"]};
+            font-size: 0.92rem;
+        }}
+
+        .block-container {{
+            padding-top: 1.4rem !important;
+            padding-bottom: 1.3rem !important;
+            max-width: 1300px;
+        }}
+
+        /* ---------- Typography ---------- */
+        h1, h2, h3, h4 {{
+            font-family: 'Fraunces', serif !important;
+            color: {PALETTE["ink"]} !important;
+            font-weight: 500 !important;
+            letter-spacing: -0.01em;
             margin-top: 0.2rem;
             margin-bottom: 0.2rem;
-        }
-        .stMetric {
-            padding: 0 !important;
-        }
-        hr {
-            margin: 8px 0 !important;
-        }
-        .stDataFrame {
-            font-size: 14px;
-        }
-    </style>
-""", unsafe_allow_html=True)
+        }}
+        h4 {{
+            border-bottom: 1px solid {PALETTE["rule"]};
+            padding-bottom: 0.25rem;
+            margin-top: 1rem !important;
+            font-size: 1.05rem !important;
+        }}
+        .eyebrow {{
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+            color: {PALETTE["gold"]};
+            margin-bottom: 0.1rem;
+        }}
 
-# -------------------------------------------------------------
-# HEADER
-# -------------------------------------------------------------
-st.markdown("""
-    <div style="text-align:center; padding: 20px 0 15px 0;">
-        <h1 style="color:#4A4A4A; margin-bottom:8px; font-size:42px; font-weight:700;">
-            📊 Today's Gainers & Losers (Yahoo Finance)
-        </h1>
-        <p style="color:#777; font-size:16px; margin-top:0;">
-            Real‑time market data from <a href="https://finance.yahoo.com/markets/stocks/gainers/" target="_blank" style="color:#1f77b4; text-decoration:none;">
-                Yahoo Finance
-            </a>
-        </p>
-    </div>
-""", unsafe_allow_html=True)
+        /* ---------- Masthead ---------- */
+        .masthead {{
+            border-top: 2px solid {PALETTE["ink"]};
+            border-bottom: 1px solid {PALETTE["rule"]};
+            padding: 0.5rem 0 0.6rem 0;
+            margin-bottom: 0.9rem;
+            text-align: center;
+        }}
+        .masthead .eyebrow {{ margin-bottom: 0.2rem; text-align: center; }}
+        .masthead h1 {{
+            font-size: 1.6rem !important;
+            margin: 0 !important;
+            line-height: 1.15;
+        }}
+        .masthead .dek {{
+            font-family: 'Inter', sans-serif;
+            color: {PALETTE["muted"]};
+            font-size: 0.82rem;
+            margin-top: 0.2rem;
+        }}
+        .masthead .dek a {{ color: {PALETTE["ink"]}; text-decoration: none; border-bottom: 1px solid {PALETTE["gold"]}; }}
+
+        /* ---------- Sidebar ---------- */
+        [data-testid="stSidebar"] {{
+            background: {PALETTE["ink"]};
+        }}
+        [data-testid="stSidebar"] * {{
+            color: {PALETTE["paper_text"]} !important;
+        }}
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {{
+            font-family: 'Fraunces', serif !important;
+            font-weight: 500 !important;
+            color: {PALETTE["paper_text"]} !important;
+            border-bottom: 1px solid rgba(217,212,199,0.14);
+            padding-bottom: 0.3rem;
+            font-size: 1.05rem !important;
+        }}
+        [data-testid="stSidebar"] hr {{
+            border-color: rgba(217,212,199,0.12) !important;
+            margin: 0.6rem 0 !important;
+        }}
+        [data-testid="stSidebar"] label {{ color: {PALETTE["paper_text"]} !important; opacity: 0.8; }}
+
+        [data-testid="stSidebar"] input,
+        [data-testid="stSidebar"] [data-baseweb="select"] > div {{
+            background: {PALETTE["ink_2"]} !important;
+            border: 1px solid rgba(217,212,199,0.16) !important;
+            color: {PALETTE["paper_text"]} !important;
+            border-radius: 4px !important;
+        }}
+
+        /* ---------- Buttons ---------- */
+        .stButton > button, button[kind="primary"] {{
+            background: {PALETTE["emerald"]} !important;
+            color: {PALETTE["paper_text"]} !important;
+            border: 1px solid {PALETTE["emerald"]} !important;
+            border-radius: 4px !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            font-size: 0.74rem !important;
+            padding: 0.35rem 0.85rem !important;
+        }}
+        .stButton > button:hover, button[kind="primary"]:hover {{
+            background: {PALETTE["ink"]} !important;
+            border-color: {PALETTE["gold"]} !important;
+            color: {PALETTE["gold"]} !important;
+        }}
+
+        /* ---------- Metrics ---------- */
+        [data-testid="stMetric"] {{
+            background: {PALETTE["paper_2"]};
+            border: 1px solid {PALETTE["rule"]};
+            border-radius: 6px;
+            padding: 0.5rem 0.65rem 0.4rem 0.65rem !important;
+        }}
+        [data-testid="stMetricLabel"] {{
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.66rem !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: {PALETTE["muted"]} !important;
+        }}
+        [data-testid="stMetricValue"] {{
+            font-family: 'IBM Plex Mono', monospace !important;
+            color: {PALETTE["ink"]} !important;
+            font-weight: 500 !important;
+            font-size: 1.25rem !important;
+        }}
+
+        /* ---------- Dataframes ---------- */
+        [data-testid="stDataFrame"] {{
+            border: 1px solid {PALETTE["rule"]};
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }}
+
+        /* ---------- Rules ---------- */
+        hr {{ border-color: {PALETTE["rule"]} !important; margin: 0.6rem 0 !important; }}
+
+        /* ---------- General compaction ---------- */
+        div[data-testid="stVerticalBlock"] {{ gap: 0.4rem; }}
+        div[data-testid="stHorizontalBlock"] {{ gap: 0.6rem; }}
+        .element-container {{ margin-bottom: 0.1rem !important; }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def masthead(eyebrow, title, dek):
+    st.markdown(
+        f"""
+        <div class="masthead">
+            <span class="eyebrow">{eyebrow}</span>
+            <h1>{title}</h1>
+            <div class="dek">{dek}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+inject_design_system()
+
+masthead(
+    eyebrow="Alpha Desk &middot; Daily Movers",
+    title="Today's Gainers &amp; Losers",
+    dek='Real-time market data from <a href="https://finance.yahoo.com/markets/stocks/gainers/" target="_blank">Yahoo Finance</a>',
+)
 
 # -------------------------------------------------------------
 # CONSTANTS
@@ -224,8 +389,11 @@ def sort_table(df, table_type):
 # -------------------------------------------------------------
 # UI FUNCTIONS
 # -------------------------------------------------------------
-def display_stock_table(df, title, table_type):
-    st.markdown(f"<h4 style='margin-bottom:4px;'>{title}</h4>", unsafe_allow_html=True)
+def display_stock_table(df, title, eyebrow, table_type):
+    st.markdown(
+        f"""<div class="section-head"><span class="eyebrow">{eyebrow}</span><h4>{title}</h4></div>""",
+        unsafe_allow_html=True
+    )
 
     if df.empty:
         st.warning(f"No data found for {table_type}.")
@@ -237,8 +405,8 @@ def display_stock_table(df, title, table_type):
         return
 
     styled = cleaned.style.map(
-        lambda x: "color:green;font-weight:bold;" if isinstance(x, str) and "+" in x else
-                  "color:red;font-weight:bold;" if isinstance(x, str) and "-" in x else "",
+        lambda x: f"color:{PALETTE['emerald']};font-weight:600;" if isinstance(x, str) and "+" in x else
+                  f"color:{PALETTE['burgundy']};font-weight:600;" if isinstance(x, str) and "-" in x else "",
         subset=["Change", "Change %"]
     )
 
@@ -266,7 +434,8 @@ def main():
 
     # Sidebar
     with st.sidebar:
-        st.header("⚙️ Controls")
+        st.markdown('<span class="eyebrow">Desk Setup</span>', unsafe_allow_html=True)
+        st.header("Controls")
 
         refresh_option = st.selectbox(
             "Auto‑Refresh Interval",
@@ -283,7 +452,7 @@ def main():
 
         show_metrics = st.checkbox("Show Performance Metrics", value=True)
 
-        if st.button("🔄 Refresh Now"):
+        if st.button("Refresh Now"):
             st.cache_data.clear()
             st.rerun()
 
@@ -299,9 +468,9 @@ def main():
         display_performance_metrics(gainers_df, losers_df)
 
     # Tables
-    display_stock_table(gainers_df, "📈 Top 50 Gainers", "gainers")
+    display_stock_table(gainers_df, "Top 50 Gainers", "Advancing", "gainers")
     st.markdown("<hr>", unsafe_allow_html=True)
-    display_stock_table(losers_df, "📉 Top 50 Losers", "losers")
+    display_stock_table(losers_df, "Top 50 Losers", "Declining", "losers")
 
     # Auto‑refresh
     refresh_seconds = {
