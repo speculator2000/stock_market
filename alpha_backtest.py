@@ -112,9 +112,10 @@ def inject_design_system():
         }}
         .masthead .eyebrow {{ margin-bottom: 0.2rem; text-align: center; }}
         .masthead h1 {{
-            font-size: 1.6rem !important;
+            font-size: 2.0rem !important;
             margin: 0 !important;
             line-height: 1.15;
+            font-weight: 600 !important;
         }}
         .masthead .dek {{
             font-family: 'Inter', sans-serif;
