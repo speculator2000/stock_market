@@ -156,7 +156,7 @@ def inject_design_system():
             margin-top: 0.2rem;
         }}
         .masthead .meta {{
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: 'IBM Plex Mono' #, monospace;
             font-size: 0.68rem;
             color: {PALETTE["muted"]};
             letter-spacing: 0.02em;
