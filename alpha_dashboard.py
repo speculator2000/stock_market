@@ -1387,8 +1387,7 @@ class EnhancedStockDashboard:
             eyebrow="Alpha Dashboard &middot; Equity Research",
             title=PAGE_TITLE,
             dek=f"Professional-grade stock analysis and portfolio tools &middot; built by {AUTHOR}",
-            meta=f"Data updated: {Eastern_time.strftime('%d %b %Y &middot; %H:%M')} Eastern",
-        )
+            meta=f"Data updated: {Eastern_time.strftime('%Y-%m-%d at %-I:%M %p (Eastern)')}")
 
         # Get configuration from sidebar
         config = self.sidebar()
