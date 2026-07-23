@@ -150,13 +150,13 @@ def inject_design_system():
             font-weight: 600 !important;
         }}
         .masthead .dek {{
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter' #, sans-serif;
             color: {PALETTE["muted"]};
             font-size: 0.82rem;
             margin-top: 0.2rem;
         }}
         .masthead .meta {{
-            font-family: 'Inter', sans-serif; #'IBM Plex Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.68rem;
             color: {PALETTE["muted"]};
             letter-spacing: 0.02em;
