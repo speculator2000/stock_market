@@ -107,7 +107,8 @@ def inject_design_system():
             font-size: 2.0rem !important;
             margin: 0 !important;
             line-height: 1.15;
-        }}
+            font-weight: 600 !important;
+        }}      
         .masthead .dek {{
             font-family: 'Inter', sans-serif;
             color: {PALETTE["muted"]};
