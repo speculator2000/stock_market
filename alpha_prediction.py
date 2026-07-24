@@ -93,11 +93,106 @@ def _map_headers(header_texts: List[str]) -> Dict[str, int]:
     return mapping
 
 
+def _looks_like_gainers_table(df: pd.DataFrame) -> bool:
+    """Heuristic check that a parsed table is actually the gainers table."""
+    if df.empty or len(df.columns) < 4:
+        return False
+    col_text = " ".join(str(c).lower() for c in df.columns)
+    return all(k in col_text for k in ("symbol", "price"))
+
+
+def _parse_with_pandas_read_html(html: str) -> pd.DataFrame:
+    """
+    Primary parser: let pandas do the table/column alignment. This handles
+    colspan/rowspan and any extra unlabeled cells (icons, star/watchlist
+    buttons) correctly, which a manual <th>/<td> position-matching parser
+    can silently get wrong.
+    """
+    try:
+        tables = pd.read_html(html, flavor="html5lib")
+    except Exception as e:
+        logger.debug(f"pd.read_html failed: {e}")
+        return pd.DataFrame()
+
+    for raw_table in tables:
+        if _looks_like_gainers_table(raw_table):
+            column_index = _map_headers([str(c) for c in raw_table.columns])
+            if "Symbol" not in column_index:
+                continue
+            renamed = {raw_table.columns[idx]: clean_name for clean_name, idx in column_index.items()}
+            out = raw_table.rename(columns=renamed)
+            keep_cols = [c for c in COLUMN_PATTERNS if c in out.columns]
+            out = out[keep_cols].astype(str)
+            return out.reindex(columns=list(COLUMN_PATTERNS.keys()))
+    return pd.DataFrame()
+
+
+def _parse_with_beautifulsoup(html: str) -> pd.DataFrame:
+    """
+    Fallback parser: manually walk <thead>/<tbody>. Handles the case where a
+    data row has more <td> cells than the header has <th> cells (e.g. a
+    leading star/watchlist icon column with no header label) by shifting
+    the mapped indices by that row's cell-count surplus, rather than
+    assuming header and data columns line up 1:1.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table")
+    if not table:
+        logger.error("Could not find the gainers table on the page.")
+        return pd.DataFrame()
+
+    thead = table.find("thead")
+    header_cells = thead.find_all("th") if thead else table.find_all("th")
+    header_texts = [th.get_text(strip=True) for th in header_cells]
+    if not header_texts:
+        logger.error("Gainers table has no header row; cannot map columns.")
+        return pd.DataFrame()
+
+    column_index = _map_headers(header_texts)
+    if "Symbol" not in column_index:
+        logger.error(f"Could not locate a 'Symbol' column among headers: {header_texts}")
+        return pd.DataFrame()
+
+    logger.debug(f"Parsed headers: {header_texts}")
+    logger.debug(f"Header -> column mapping: {column_index}")
+
+    tbody = table.find("tbody")
+    rows = tbody.find_all("tr") if tbody else table.find_all("tr")[1:]
+
+    records: List[Dict[str, str]] = []
+    for i, row in enumerate(rows):
+        cells = row.find_all("td")
+        if not cells:
+            continue
+        cell_texts = [c.get_text(strip=True) for c in cells]
+
+        # If this row has more cells than the header does, assume the
+        # surplus are unlabeled leading cells (icon/star/rank columns) and
+        # shift every mapped index by that surplus.
+        offset = max(0, len(cell_texts) - len(header_texts))
+
+        record = {
+            clean_name: cell_texts[idx + offset]
+            for clean_name, idx in column_index.items()
+            if (idx + offset) < len(cell_texts)
+        }
+        if i == 0:
+            logger.debug(f"First raw row (offset={offset}): {record}")
+        if record.get("Symbol"):
+            records.append(record)
+
+    return pd.DataFrame(records, columns=list(COLUMN_PATTERNS.keys()))
+
+
 def fetch_gainers_data(url: str, headers: Dict[str, str]) -> pd.DataFrame:
     """
     Fetches and parses the top gainers table from Yahoo Finance.
     Returns a pandas DataFrame with raw (string) data, columns matching
     COLUMN_PATTERNS' keys where available.
+
+    Tries pd.read_html first (handles column alignment automatically), then
+    falls back to manual BeautifulSoup parsing if that doesn't find a
+    plausible table.
     """
     session = _build_session()
     try:
@@ -108,43 +203,14 @@ def fetch_gainers_data(url: str, headers: Dict[str, str]) -> pd.DataFrame:
         return pd.DataFrame()
 
     try:
-        soup = BeautifulSoup(response.text, "html.parser")
-        table = soup.find("table")
-        if not table:
-            logger.error("Could not find the gainers table on the page.")
-            return pd.DataFrame()
+        df = _parse_with_pandas_read_html(response.text)
+        if not df.empty:
+            logger.info(f"Successfully fetched {len(df)} stocks from gainers list (pandas parser).")
+            return df
 
-        thead = table.find("thead")
-        header_cells = thead.find_all("th") if thead else table.find_all("th")
-        header_texts = [th.get_text(strip=True) for th in header_cells]
-        if not header_texts:
-            logger.error("Gainers table has no header row; cannot map columns.")
-            return pd.DataFrame()
-
-        column_index = _map_headers(header_texts)
-        if "Symbol" not in column_index:
-            logger.error(f"Could not locate a 'Symbol' column among headers: {header_texts}")
-            return pd.DataFrame()
-
-        tbody = table.find("tbody")
-        rows = tbody.find_all("tr") if tbody else table.find_all("tr")[1:]
-
-        records: List[Dict[str, str]] = []
-        for row in rows:
-            cells = row.find_all("td")
-            if not cells:
-                continue
-            cell_texts = [c.get_text(strip=True) for c in cells]
-            record = {
-                clean_name: cell_texts[idx]
-                for clean_name, idx in column_index.items()
-                if idx < len(cell_texts)
-            }
-            if record.get("Symbol"):
-                records.append(record)
-
-        df = pd.DataFrame(records, columns=list(COLUMN_PATTERNS.keys()))
-        logger.info(f"Successfully fetched {len(df)} stocks from gainers list.")
+        logger.info("pandas.read_html parse didn't yield a usable table; trying BeautifulSoup fallback.")
+        df = _parse_with_beautifulsoup(response.text)
+        logger.info(f"Successfully fetched {len(df)} stocks from gainers list (BeautifulSoup fallback).")
         return df
 
     except Exception as e:
@@ -254,7 +320,26 @@ def clean_and_validate(df: pd.DataFrame) -> pd.DataFrame:
     df["52 Wk High"] = low_high.apply(lambda t: t[1])
 
     # Drop rows with critical missing data
-    df = df.dropna(subset=["Symbol", "Price", "Volume", "Market Cap"]).reset_index(drop=True)
+    critical_cols = ["Symbol", "Price", "Volume", "Market Cap"]
+    before = len(df)
+    if before > 0:
+        nan_counts = {c: int(df[c].isna().sum()) for c in critical_cols}
+        if any(count == before for count in nan_counts.values()):
+            # Every row lost a critical field — almost always a parsing
+            # misalignment (wrong <td> mapped to a column) rather than
+            # genuinely missing data. Log a raw sample so it's diagnosable
+            # straight from the log instead of needing to reproduce.
+            all_nan_cols = [c for c, count in nan_counts.items() if count == before]
+            logger.error(
+                f"Every row is missing {all_nan_cols} after cleaning — this usually means the "
+                f"scraper mapped the wrong table cells to these columns (Yahoo's page layout may "
+                f"have changed). Raw sample row: {df.iloc[0].to_dict()}"
+            )
+    df = df.dropna(subset=critical_cols).reset_index(drop=True)
+    if before > 0 and df.empty:
+        logger.error(
+            f"All {before} rows dropped during cleaning. NaN counts per critical column: {nan_counts}"
+        )
 
     # Calculate additional metrics, guarding against division by zero
     safe_market_cap = df["Market Cap"].replace(0, np.nan)
